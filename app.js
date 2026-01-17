@@ -694,22 +694,8 @@ function loadMediaList() {
 }
 
 function getMediaEmbed(item) {
-    // Detect iOS/Safari for PDF handling
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
     // If there's an uploaded PDF file
     if (item.file && item.file.startsWith('data:application/pdf')) {
-        if (isIOS || isSafari) {
-            // On iOS/Safari, show a button to open PDF in new tab
-            return `
-                <div class="media-link">
-                    <button class="open-link-btn" onclick="window.open('${item.file}', '_blank')" style="width: 100%;">
-                        📄 View PDF / Lelee PDF →
-                    </button>
-                </div>
-            `;
-        }
         return `
             <div class="media-embed pdf-embed">
                 <iframe src="${item.file}#toolbar=0" title="${item.title}"></iframe>
@@ -721,16 +707,6 @@ function getMediaEmbed(item) {
     if (item.link) {
         // Check if it's a PDF link
         if (item.link.toLowerCase().endsWith('.pdf')) {
-            if (isIOS || isSafari) {
-                // On iOS/Safari, show a button to open PDF in new tab
-                return `
-                    <div class="media-link">
-                        <button class="open-link-btn" onclick="window.open('${item.link}', '_blank')" style="width: 100%;">
-                            📄 View PDF / Lelee PDF →
-                        </button>
-                    </div>
-                `;
-            }
             return `
                 <div class="media-embed pdf-embed">
                     <iframe src="${item.link}#toolbar=0" title="${item.title}"></iframe>
