@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Igbo Practice</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <button class="nav-btn active" data-screen="practice">Practice</button>
+            <button class="nav-btn" data-screen="library">Library</button>
+        </nav>
+
+        <!-- Practice Screen -->
+        <div id="practice-screen" class="screen active">
+            <div class="header">
+                <h1>Daily Practice</h1>
+                <div class="streak-info">
+                    <div class="streak-item">
+                        <span class="streak-label">Streak</span>
+                        <span class="streak-value" id="current-streak">0</span>
+                    </div>
+                    <div class="streak-item">
+                        <span class="streak-label">Total</span>
+                        <span class="streak-value" id="total-recordings">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Prompt -->
+            <div class="prompt-card">
+                <h2>Today's Prompt</h2>
+                <p class="prompt-text" id="daily-prompt">Loading...</p>
+            </div>
+
+            <!-- Recording Section -->
+            <div class="recording-section">
+                <div id="recording-controls">
+                    <button id="record-btn" class="btn btn-primary">
+                        <span class="btn-icon">🎤</span>
+                        Start Recording
+                    </button>
+                    <div id="recording-status" class="recording-status hidden">
+                        <span class="recording-indicator"></span>
+                        Recording...
+                    </div>
+                </div>
+
+                <!-- Playback Section -->
+                <div id="playback-section" class="hidden">
+                    <audio id="audio-player" controls></audio>
+                    <div class="playback-controls">
+                        <button id="rerecord-btn" class="btn btn-secondary">Re-record</button>
+                        <button id="save-btn" class="btn btn-success">Mark Complete</button>
+                    </div>
+                </div>
+
+                <!-- Completion Message -->
+                <div id="completion-message" class="hidden">
+                    <div class="completion-card">
+                        <span class="completion-icon">✓</span>
+                        <p>Great work! You've completed today's practice.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="calendar-section">
+                <h3>Practice Calendar</h3>
+                <div id="calendar" class="calendar"></div>
+            </div>
+
+            <!-- Past Recordings -->
+            <div class="past-recordings-section">
+                <h3>Past Recordings</h3>
+                <div id="past-recordings-list" class="recordings-list"></div>
+            </div>
+        </div>
+
+        <!-- Library Screen -->
+        <div id="library-screen" class="screen">
+            <div class="header">
+                <h1>Media Library</h1>
+                <button id="add-media-btn" class="btn btn-primary">+ Add Media</button>
+            </div>
+
+            <!-- Add Media Form -->
+            <div id="add-media-form" class="form-card hidden">
+                <h3>Add New Media</h3>
+                <form id="media-form">
+                    <div class="form-group">
+                        <label for="media-title">Title</label>
+                        <input type="text" id="media-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="media-type">Type</label>
+                        <select id="media-type" required>
+                            <option value="">Select type...</option>
+                            <option value="movie">Movie</option>
+                            <option value="audiobook">Audiobook</option>
+                            <option value="story">Story</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="media-link">Link or Notes</label>
+                        <textarea id="media-link" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" id="cancel-media-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Media List -->
+            <div id="media-list" class="media-list"></div>
+
+            <!-- Media Reflection Modal -->
+            <div id="reflection-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>Record Your Reflection</h3>
+                    <p class="modal-subtitle">What did you learn from <span id="reflection-media-title"></span>?</p>
+                    <div class="modal-recording">
+                        <button id="modal-record-btn" class="btn btn-primary">
+                            <span class="btn-icon">🎤</span>
+                            Start Recording
+                        </button>
+                        <div id="modal-recording-status" class="recording-status hidden">
+                            <span class="recording-indicator"></span>
+                            Recording...
+                        </div>
+                        <div id="modal-playback" class="hidden">
+                            <audio id="modal-audio-player" controls></audio>
+                            <div class="playback-controls">
+                                <button id="modal-rerecord-btn" class="btn btn-secondary">Re-record</button>
+                                <button id="modal-save-btn" class="btn btn-success">Save Reflection</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="modal-close-btn" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,547 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Navigation */
+.nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-btn.active {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Screens */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Header */
+.header {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 16px;
+    color: #667eea;
+}
+
+.streak-info {
+    display: flex;
+    gap: 20px;
+}
+
+.streak-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.streak-label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.streak-value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* Prompt Card */
+.prompt-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.prompt-card h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #667eea;
+}
+
+.prompt-text {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Recording Section */
+.recording-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn {
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-icon {
+    font-size: 20px;
+}
+
+/* Recording Status */
+.recording-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px;
+    background: #ffe5e5;
+    border-radius: 8px;
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+.recording-indicator {
+    width: 12px;
+    height: 12px;
+    background: #d32f2f;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Playback Section */
+#playback-section {
+    margin-top: 20px;
+}
+
+#audio-player {
+    width: 100%;
+    margin-bottom: 16px;
+    border-radius: 8px;
+}
+
+.playback-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.playback-controls .btn {
+    flex: 1;
+}
+
+/* Completion Message */
+.completion-card {
+    text-align: center;
+    padding: 24px;
+    background: #e8f5e9;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.completion-icon {
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    background: #28a745;
+    color: white;
+    border-radius: 50%;
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.completion-card p {
+    font-size: 18px;
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+/* Calendar */
+.calendar-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-section h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #667eea;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f8f9fa;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.calendar-day.header {
+    background: transparent;
+    color: #333;
+    font-size: 12px;
+}
+
+.calendar-day.completed {
+    background: #28a745;
+    color: white;
+}
+
+.calendar-day.today {
+    border: 2px solid #667eea;
+}
+
+/* Past Recordings */
+.past-recordings-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.past-recordings-section h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #667eea;
+}
+
+.recordings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recording-item {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.recording-date {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.recording-prompt {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.recording-item audio {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* Media Library */
+.form-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-card h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #667eea;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+/* Media List */
+.media-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.media-item {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.media-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.media-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.media-type {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #667eea;
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.media-link {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 12px;
+    word-break: break-word;
+}
+
+.media-status {
+    margin-bottom: 12px;
+}
+
+.status-select {
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.media-reflection {
+    margin-top: 12px;
+    padding: 12px;
+    background: #e8f5e9;
+    border-radius: 8px;
+}
+
+.media-reflection p {
+    font-size: 14px;
+    color: #2e7d32;
+    margin-bottom: 8px;
+}
+
+.media-reflection audio {
+    width: 100%;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #667eea;
+}
+
+.modal-subtitle {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.modal-recording {
+    margin-bottom: 20px;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    body {
+        padding: 12px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .prompt-text {
+        font-size: 18px;
+    }
+
+    .calendar {
+        gap: 4px;
+    }
+
+    .calendar-day {
+        font-size: 12px;
+    }
+}
