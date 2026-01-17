@@ -36,6 +36,22 @@
                 <p class="prompt-text" id="daily-prompt">Loading...</p>
             </div>
 
+            <!-- Microphone Permission Banner -->
+            <div id="mic-permission-banner" class="mic-permission-banner hidden">
+                <h4>🎤 Microphone Access Needed</h4>
+                <p>To record your practice, please allow microphone access when prompted.</p>
+                <div class="instructions">
+                    <strong>On iPhone:</strong>
+                    <ol>
+                        <li>Tap the "Start Recording" button below</li>
+                        <li>A popup will appear asking for microphone access</li>
+                        <li>Tap "Allow" to grant permission</li>
+                    </ol>
+                    <p style="margin-top: 8px;"><strong>If you accidentally blocked it:</strong> Go to Settings → Safari → This Website → Microphone → Allow</p>
+                </div>
+                <button class="dismiss-banner" onclick="dismissMicBanner()">Got it!</button>
+            </div>
+
             <!-- Recording Section -->
             <div class="recording-section">
                 <div id="recording-controls">
@@ -102,11 +118,27 @@
                             <option value="movie">Movie</option>
                             <option value="audiobook">Audiobook</option>
                             <option value="story">Story</option>
+                            <option value="pdf">PDF Document</option>
+                            <option value="page">Web Page</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="media-link">Link or Notes</label>
-                        <textarea id="media-link" rows="3"></textarea>
+                        <label for="media-link">Link (YouTube, website, etc.)</label>
+                        <input type="url" id="media-link" placeholder="https://...">
+                        <small style="color: #6c757d; font-size: 13px; display: block; margin-top: 4px;">
+                            YouTube videos will play directly in the app
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="media-file">Or Upload a PDF</label>
+                        <input type="file" id="media-file" accept=".pdf,application/pdf">
+                        <small style="color: #6c757d; font-size: 13px; display: block; margin-top: 4px;">
+                            PDF will be stored and viewable in the app
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="media-notes">Notes (optional)</label>
+                        <textarea id="media-notes" rows="2" placeholder="Add any notes..."></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-success">Save</button>

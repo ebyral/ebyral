@@ -37,7 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
     initRecording();
     initMediaLibrary();
     checkTodayCompletion();
+    checkMicPermissionBanner();
 });
+
+// Mic Permission Banner
+function checkMicPermissionBanner() {
+    const bannerDismissed = localStorage.getItem('mic-banner-dismissed');
+    if (!bannerDismissed) {
+        document.getElementById('mic-permission-banner').classList.remove('hidden');
+    }
+}
+
+function dismissMicBanner() {
+    localStorage.setItem('mic-banner-dismissed', 'true');
+    document.getElementById('mic-permission-banner').classList.add('hidden');
+}
 
 // Navigation
 function initNavigation() {
@@ -97,6 +111,10 @@ async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+        // Hide banner once permission is granted
+        localStorage.setItem('mic-banner-dismissed', 'true');
+        document.getElementById('mic-permission-banner').classList.add('hidden');
+
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
 
@@ -135,8 +153,17 @@ async function startRecording() {
         }, 180000);
 
     } catch (error) {
-        alert('Could not access microphone. Please check permissions.');
         console.error('Error accessing microphone:', error);
+
+        // Show helpful error message
+        const banner = document.getElementById('mic-permission-banner');
+        banner.classList.remove('hidden');
+
+        if (error.name === 'NotAllowedError') {
+            alert('Microphone access was denied. Please:\n\n1. Tap the "AA" or settings icon in Safari\n2. Select "Website Settings"\n3. Set Microphone to "Allow"\n4. Reload the page and try again');
+        } else {
+            alert('Could not access microphone. Please check your device settings and try again.');
+        }
     }
 }
 
@@ -357,28 +384,50 @@ function initMediaLibrary() {
     loadMediaList();
 }
 
-function addMedia() {
+async function addMedia() {
     const title = document.getElementById('media-title').value;
     const type = document.getElementById('media-type').value;
     const link = document.getElementById('media-link').value;
+    const notes = document.getElementById('media-notes').value;
+    const fileInput = document.getElementById('media-file');
 
     const media = JSON.parse(localStorage.getItem('media') || '[]');
 
-    media.push({
+    const newMedia = {
         id: Date.now(),
         title,
         type,
         link,
+        notes,
         status: 'not-started',
-        reflection: null
-    });
+        reflection: null,
+        file: null
+    };
 
-    localStorage.setItem('media', JSON.stringify(media));
+    // Handle PDF file upload
+    if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
 
-    document.getElementById('add-media-form').classList.add('hidden');
-    document.getElementById('media-form').reset();
+        reader.onloadend = () => {
+            newMedia.file = reader.result;
+            media.push(newMedia);
+            localStorage.setItem('media', JSON.stringify(media));
 
-    loadMediaList();
+            document.getElementById('add-media-form').classList.add('hidden');
+            document.getElementById('media-form').reset();
+            loadMediaList();
+        };
+
+        reader.readAsDataURL(file);
+    } else {
+        media.push(newMedia);
+        localStorage.setItem('media', JSON.stringify(media));
+
+        document.getElementById('add-media-form').classList.add('hidden');
+        document.getElementById('media-form').reset();
+        loadMediaList();
+    }
 }
 
 function loadMediaList() {
@@ -390,7 +439,10 @@ function loadMediaList() {
         return;
     }
 
-    list.innerHTML = media.map(item => `
+    list.innerHTML = media.map(item => {
+        const embedContent = getMediaEmbed(item);
+
+        return `
         <div class="media-item">
             <div class="media-header">
                 <div>
@@ -398,7 +450,8 @@ function loadMediaList() {
                     <span class="media-type">${item.type}</span>
                 </div>
             </div>
-            ${item.link ? `<div class="media-link">${item.link}</div>` : ''}
+            ${embedContent}
+            ${item.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d;">${item.notes}</div>` : ''}
             <div class="media-status">
                 <select class="status-select" onchange="updateMediaStatus(${item.id}, this.value)">
                     <option value="not-started" ${item.status === 'not-started' ? 'selected' : ''}>Not Started</option>
@@ -413,7 +466,64 @@ function loadMediaList() {
                 </div>
             ` : ''}
         </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function getMediaEmbed(item) {
+    // If there's an uploaded PDF file
+    if (item.file && item.file.startsWith('data:application/pdf')) {
+        return `
+            <div class="media-embed pdf-embed">
+                <iframe src="${item.file}#toolbar=0" title="${item.title}"></iframe>
+            </div>
+        `;
+    }
+
+    // If there's a link
+    if (item.link) {
+        // Check if it's a YouTube link
+        const youtubeId = extractYouTubeId(item.link);
+        if (youtubeId) {
+            return `
+                <div class="media-embed">
+                    <iframe src="https://www.youtube.com/embed/${youtubeId}"
+                            title="${item.title}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+        }
+
+        // For other links, show as clickable link
+        return `
+            <div class="media-link">
+                <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.link}</a>
+                <button class="open-link-btn" onclick="window.open('${item.link}', '_blank')">
+                    Open Link →
+                </button>
+            </div>
+        `;
+    }
+
+    return '';
+}
+
+function extractYouTubeId(url) {
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        /youtube\.com\/shorts\/([^&\n?#]+)/
+    ];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+
+    return null;
 }
 
 function updateMediaStatus(id, newStatus) {
@@ -494,8 +604,13 @@ async function startModalRecording() {
         }, 180000);
 
     } catch (error) {
-        alert('Could not access microphone. Please check permissions.');
         console.error('Error accessing microphone:', error);
+
+        if (error.name === 'NotAllowedError') {
+            alert('Microphone access was denied. Please:\n\n1. Tap the "AA" or settings icon in Safari\n2. Select "Website Settings"\n3. Set Microphone to "Allow"\n4. Reload the page and try again');
+        } else {
+            alert('Could not access microphone. Please check your device settings and try again.');
+        }
     }
 }
 
