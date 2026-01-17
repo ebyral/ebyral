@@ -853,6 +853,34 @@ function getMediaEmbed(item) {
             `;
         }
 
+        // Check if it's a Radio Garden link
+        if (item.link.includes('radio.garden')) {
+            return `
+                <div class="radio-card">
+                    <div class="radio-live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">LIVE / DỊ NDỤ</span>
+                    </div>
+                    <button class="radio-listen-btn" onclick="window.open('${item.link}', '_blank')">
+                        <span class="radio-icon">📻</span>
+                        <span class="radio-text">Listen Now / Gee Ntị Ugbua</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        // Check if it's BBC Igbo News
+        if (item.link.includes('bbc.com/igbo')) {
+            return `
+                <div class="news-card">
+                    <div class="news-badge">📰 LATEST NEWS / AKỤKỌ ỌHỤRỤ</div>
+                    <button class="news-read-btn" onclick="window.open('${item.link}', '_blank')">
+                        Read Latest Stories / Gụọ Akụkọ Ọhụrụ →
+                    </button>
+                </div>
+            `;
+        }
+
         // For other links, show as clickable link
         return `
             <div class="media-link">
