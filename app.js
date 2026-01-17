@@ -99,10 +99,12 @@ function loadDailyPrompt() {
 // Recording
 function initRecording() {
     const recordBtn = document.getElementById('record-btn');
+    const stopBtn = document.getElementById('stop-btn');
     const rerecordBtn = document.getElementById('rerecord-btn');
     const saveBtn = document.getElementById('save-btn');
 
     recordBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', stopRecording);
     rerecordBtn.addEventListener('click', reRecord);
     saveBtn.addEventListener('click', saveRecording);
 }
@@ -359,6 +361,7 @@ function initMediaLibrary() {
     const mediaForm = document.getElementById('media-form');
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const modalRecordBtn = document.getElementById('modal-record-btn');
+    const modalStopBtn = document.getElementById('modal-stop-btn');
     const modalRerecordBtn = document.getElementById('modal-rerecord-btn');
     const modalSaveBtn = document.getElementById('modal-save-btn');
 
@@ -378,6 +381,7 @@ function initMediaLibrary() {
 
     modalCloseBtn.addEventListener('click', closeReflectionModal);
     modalRecordBtn.addEventListener('click', startModalRecording);
+    modalStopBtn.addEventListener('click', stopModalRecording);
     modalRerecordBtn.addEventListener('click', reRecordModal);
     modalSaveBtn.addEventListener('click', saveModalReflection);
 
@@ -459,9 +463,12 @@ function loadMediaList() {
                     <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>Completed</option>
                 </select>
             </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="openReflectionModal(${item.id}, '${item.title.replace(/'/g, "\\'")}')">
+                ${item.reflection ? '🎤 Update Reflection' : '🎤 Record What I Learned'}
+            </button>
             ${item.reflection ? `
                 <div class="media-reflection">
-                    <p><strong>Reflection:</strong></p>
+                    <p><strong>My Reflection:</strong></p>
                     <audio controls src="${item.reflection}"></audio>
                 </div>
             ` : ''}
@@ -611,6 +618,13 @@ async function startModalRecording() {
         } else {
             alert('Could not access microphone. Please check your device settings and try again.');
         }
+    }
+}
+
+function stopModalRecording() {
+    if (modalMediaRecorder && modalMediaRecorder.state === 'recording') {
+        modalMediaRecorder.stop();
+        document.getElementById('modal-recording-status').classList.add('hidden');
     }
 }
 

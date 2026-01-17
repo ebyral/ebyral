@@ -60,8 +60,11 @@
                         Start Recording
                     </button>
                     <div id="recording-status" class="recording-status hidden">
-                        <span class="recording-indicator"></span>
-                        Recording...
+                        <div class="recording-status-text">
+                            <span class="recording-indicator"></span>
+                            Recording...
+                        </div>
+                        <button id="stop-btn" class="btn btn-danger">Stop</button>
                     </div>
                 </div>
 
@@ -161,8 +164,11 @@
                             Start Recording
                         </button>
                         <div id="modal-recording-status" class="recording-status hidden">
-                            <span class="recording-indicator"></span>
-                            Recording...
+                            <div class="recording-status-text">
+                                <span class="recording-indicator"></span>
+                                Recording...
+                            </div>
+                            <button id="modal-stop-btn" class="btn btn-danger">Stop</button>
                         </div>
                         <div id="modal-playback" class="hidden">
                             <audio id="modal-audio-player" controls></audio>

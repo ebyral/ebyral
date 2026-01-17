@@ -175,6 +175,15 @@ body {
     background: #218838;
 }
 
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
 .btn-icon {
     font-size: 20px;
 }
@@ -182,15 +191,27 @@ body {
 /* Recording Status */
 .recording-status {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 12px;
     margin-top: 16px;
-    padding: 12px;
+    padding: 16px;
     background: #ffe5e5;
     border-radius: 8px;
     color: #d32f2f;
     font-weight: 600;
+}
+
+.recording-status-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recording-status #stop-btn,
+.recording-status #modal-stop-btn {
+    width: 100%;
 }
 
 .recording-indicator {
@@ -761,22 +782,27 @@ body {
     .calendar-section,
     .past-recordings-section,
     .form-card {
-        padding: 14px;
+        padding: 12px;
         margin-bottom: 10px;
     }
 
     .calendar {
-        gap: 2px;
+        gap: 1px;
+        width: 100%;
     }
 
     .calendar-day {
-        font-size: 10px;
-        min-height: 32px;
-        border-radius: 6px;
+        font-size: 9px;
+        min-height: 30px;
+        border-radius: 4px;
+        padding: 2px;
     }
 
     .calendar-day.header {
-        font-size: 9px;
+        font-size: 8px;
+        font-weight: 700;
+        min-height: auto;
+        padding: 4px 2px;
     }
 
     .calendar-day.today {
