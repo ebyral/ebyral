@@ -283,26 +283,29 @@ body {
 .calendar-section {
     background: white;
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-section h3 {
     font-size: 18px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: #667eea;
 }
 
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+    gap: 4px;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .calendar-day {
     aspect-ratio: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     border-radius: 8px;
@@ -310,21 +313,63 @@ body {
     font-size: 14px;
     font-weight: 600;
     color: #6c757d;
+    padding: 4px 2px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .calendar-day.header {
-    background: transparent;
-    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    aspect-ratio: auto;
+    padding: 6px 2px;
+}
+
+.cal-icon {
+    font-size: 16px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.cal-date {
     font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.cal-igbo {
+    font-size: 7px;
+    opacity: 0.7;
+    line-height: 1;
+    margin-top: 2px;
+    text-transform: capitalize;
 }
 
 .calendar-day.completed {
-    background: #28a745;
-    color: white;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #2e7d32;
+}
+
+.calendar-day.both-activities {
+    background: linear-gradient(135deg, #fff9c4 0%, #ffeb3b 100%);
+    color: #f57f17;
+}
+
+.calendar-day.prompt-activity {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+}
+
+.calendar-day.media-activity {
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+    color: #c2185b;
 }
 
 .calendar-day.today {
-    border: 2px solid #667eea;
+    box-shadow: 0 0 0 2px #667eea inset;
+    font-weight: 800;
 }
 
 /* Past Recordings */
@@ -702,22 +747,33 @@ body {
     }
 
     .calendar-section {
-        padding: 16px;
+        padding: 12px;
         margin-bottom: 12px;
     }
 
     .calendar {
-        gap: 3px;
+        gap: 2px;
     }
 
     .calendar-day {
-        font-size: 11px;
-        min-height: 36px;
+        padding: 2px 1px;
     }
 
     .calendar-day.header {
+        font-size: 9px;
+        padding: 4px 1px;
+    }
+
+    .cal-icon {
+        font-size: 14px;
+    }
+
+    .cal-date {
         font-size: 10px;
-        font-weight: 700;
+    }
+
+    .cal-igbo {
+        font-size: 6px;
     }
 
     .past-recordings-section {
@@ -804,27 +860,37 @@ body {
     }
 
     .calendar {
-        gap: 1px;
+        gap: 2px;
         width: 100%;
     }
 
     .calendar-day {
-        font-size: 9px;
-        min-height: 30px;
-        border-radius: 4px;
-        padding: 2px;
+        padding: 2px 1px;
+        border-radius: 6px;
     }
 
     .calendar-day.header {
-        font-size: 7px;
+        font-size: 8px;
         font-weight: 700;
-        min-height: auto;
         padding: 4px 1px;
-        line-height: 1.1;
+    }
+
+    .cal-icon {
+        font-size: 12px;
+        margin-bottom: 1px;
+    }
+
+    .cal-date {
+        font-size: 9px;
+    }
+
+    .cal-igbo {
+        font-size: 5px;
+        margin-top: 1px;
     }
 
     .calendar-day.today {
-        border-width: 1.5px;
+        box-shadow: 0 0 0 1.5px #667eea inset;
     }
 
     .btn {

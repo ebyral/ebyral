@@ -436,6 +436,15 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
+    // Igbo market days (4-day cycle)
+    const igboMarketDays = ['Eke', 'Orie', 'Afọ', 'Nkwọ'];
+
+    // Calculate which Igbo day the 1st of the month falls on
+    // Using a base date to align the cycle (Jan 1, 2024 = Eke)
+    const baseDate = new Date(2024, 0, 1);
+    const daysSinceBase = Math.floor((firstDay - baseDate) / (1000 * 60 * 60 * 24));
+    const startingIgboDay = daysSinceBase % 4;
+
     // Add day headers
     const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     dayHeaders.forEach(day => {
@@ -460,26 +469,45 @@ function renderCalendar() {
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
 
+        // Calculate Igbo market day for this date
+        const igboDayIndex = (startingIgboDay + day - 1) % 4;
+        const igboDay = igboMarketDays[igboDayIndex];
+
         // Check what activities happened on this day
         const dayRecordings = recordings.filter(r => r.date === dateString);
         const hasPrompt = dayRecordings.some(r => r.type === 'prompt');
         const hasMedia = dayRecordings.some(r => r.type === 'media');
 
         if (hasPrompt && hasMedia) {
-            // Both activities - show star and number
-            dayEl.innerHTML = `<div style="font-size: 14px;">⭐</div><div style="font-size: 8px; margin-top: -2px;">${day}</div>`;
-            dayEl.classList.add('completed');
+            // Both activities - show star
+            dayEl.innerHTML = `
+                <div class="cal-icon">⭐</div>
+                <div class="cal-date">${day}</div>
+                <div class="cal-igbo">${igboDay}</div>
+            `;
+            dayEl.classList.add('completed', 'both-activities');
         } else if (hasPrompt) {
-            // Only prompt - show thought bubble and number
-            dayEl.innerHTML = `<div style="font-size: 12px;">💭</div><div style="font-size: 8px; margin-top: -2px;">${day}</div>`;
-            dayEl.classList.add('completed');
+            // Only prompt - show thought bubble
+            dayEl.innerHTML = `
+                <div class="cal-icon">💭</div>
+                <div class="cal-date">${day}</div>
+                <div class="cal-igbo">${igboDay}</div>
+            `;
+            dayEl.classList.add('completed', 'prompt-activity');
         } else if (hasMedia) {
-            // Only media - show film and number
-            dayEl.innerHTML = `<div style="font-size: 12px;">🎬</div><div style="font-size: 8px; margin-top: -2px;">${day}</div>`;
-            dayEl.classList.add('completed');
+            // Only media - show film
+            dayEl.innerHTML = `
+                <div class="cal-icon">🎬</div>
+                <div class="cal-date">${day}</div>
+                <div class="cal-igbo">${igboDay}</div>
+            `;
+            dayEl.classList.add('completed', 'media-activity');
         } else {
-            // No activity - just show day number
-            dayEl.textContent = day;
+            // No activity - show day and market day
+            dayEl.innerHTML = `
+                <div class="cal-date">${day}</div>
+                <div class="cal-igbo">${igboDay}</div>
+            `;
         }
 
         if (dateString === now.toDateString()) {
@@ -666,8 +694,22 @@ function loadMediaList() {
 }
 
 function getMediaEmbed(item) {
+    // Detect iOS/Safari for PDF handling
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
     // If there's an uploaded PDF file
     if (item.file && item.file.startsWith('data:application/pdf')) {
+        if (isIOS || isSafari) {
+            // On iOS/Safari, show a button to open PDF in new tab
+            return `
+                <div class="media-link">
+                    <button class="open-link-btn" onclick="window.open('${item.file}', '_blank')" style="width: 100%;">
+                        📄 View PDF / Lelee PDF →
+                    </button>
+                </div>
+            `;
+        }
         return `
             <div class="media-embed pdf-embed">
                 <iframe src="${item.file}#toolbar=0" title="${item.title}"></iframe>
@@ -679,6 +721,16 @@ function getMediaEmbed(item) {
     if (item.link) {
         // Check if it's a PDF link
         if (item.link.toLowerCase().endsWith('.pdf')) {
+            if (isIOS || isSafari) {
+                // On iOS/Safari, show a button to open PDF in new tab
+                return `
+                    <div class="media-link">
+                        <button class="open-link-btn" onclick="window.open('${item.link}', '_blank')" style="width: 100%;">
+                            📄 View PDF / Lelee PDF →
+                        </button>
+                    </div>
+                `;
+            }
             return `
                 <div class="media-embed pdf-embed">
                     <iframe src="${item.link}#toolbar=0" title="${item.title}"></iframe>
