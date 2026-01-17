@@ -101,17 +101,6 @@ const STARTER_MEDIA = [
     },
     {
         id: 'starter-5',
-        title: 'Igbo Cultural Symbols (UNN) / Akara Omenala Igbo',
-        type: 'page',
-        link: 'https://igbostudies.unn.edu.ng/wp-content/uploads/sites/56/2025/03/CIS-OLU-IGBO-Article-2-Nkwado-Ebe-Nlereanya-Ihe-Okpu-Odinala-N.docx',
-        notes: 'Document about Igbo cultural symbols / Akwụkwọ gbasara akara omenala Igbo',
-        status: 'not-started',
-        reflection: null,
-        file: null,
-        isPreloaded: true
-    },
-    {
-        id: 'starter-6',
         title: 'Igbo Language & University Admission (UNN) / Asụsụ Igbo na Agụmakwụkwọ',
         type: 'pdf',
         link: 'https://igbostudies.unn.edu.ng/wp-content/uploads/sites/56/2025/07/1-Ime-nke-Oma-nAsusu-Igbo-di-ka-otu-nIme-Ntozu-Maka-Inwete-Ohere-Agumakwukwo-nUlo-Akwukwo-di-Elu-nAla-Igbo.pdf',
@@ -122,11 +111,77 @@ const STARTER_MEDIA = [
         isPreloaded: true
     },
     {
-        id: 'starter-7',
+        id: 'starter-6',
         title: 'Greetings in Igbo Youth Culture (UNN) / Ekele na Ndụ Ndị Ntorobia',
         type: 'pdf',
         link: 'https://igbostudies.unn.edu.ng/wp-content/uploads/sites/56/2025/07/1-Atutu-Asusu-nobodo-ninyocha-ekele-na-ndu-ndi-ntorobia-nIgbo.pdf',
         notes: 'Study on greetings among Igbo youth / Ọmụmụ gbasara ekele n\'etiti ndị ntorobia Igbo',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-7',
+        title: 'Udala Radio 104.7 FM / Redio Udala 104.7 FM',
+        type: 'page',
+        link: 'https://radio.garden/listen/udala-radio-104-7-fm/5SW88V49',
+        notes: 'Live Igbo radio from Onitsha / Redio Igbo dị ndụ site Ọnịcha',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-8',
+        title: 'Real FM 99.1 / Redio Real FM 99.1',
+        type: 'page',
+        link: 'https://radio.garden/listen/real-fm-99-1/hrGgAD37',
+        notes: 'Live Igbo radio station / Ọdụ redio Igbo dị ndụ',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-9',
+        title: 'Bizzibodi FM 100.1 / Redio Bizzibodi FM 100.1',
+        type: 'page',
+        link: 'https://radio.garden/listen/bizzibodi-fm-100-1/HRDgff9L',
+        notes: 'Live Igbo radio station / Ọdụ redio Igbo dị ndụ',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-10',
+        title: 'DCLM Radio Igbo / Redio DCLM Igbo',
+        type: 'page',
+        link: 'https://radio.garden/listen/dclm-radio-igbo/gNFZ5_EM',
+        notes: 'Live Igbo gospel radio / Redio ozi ọma Igbo dị ndụ',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-11',
+        title: 'ABS FM 88.5 / Redio ABS FM 88.5',
+        type: 'page',
+        link: 'https://radio.garden/listen/abs-fm-88-5/8Mj5l3vP',
+        notes: 'Anambra Broadcasting Service live radio / Redio ABS dị ndụ',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-12',
+        title: 'BBC Igbo - Akụkọ Dị Mkpa / BBC Igbo News',
+        type: 'page',
+        link: 'https://www.bbc.com/igbo',
+        notes: 'Latest news and stories in Igbo / Akụkọ na akụkọ ọhụrụ n\'asụsụ Igbo',
         status: 'not-started',
         reflection: null,
         file: null,
@@ -169,8 +224,8 @@ function initStarterMedia() {
     const media = JSON.parse(localStorage.getItem('media') || '[]');
     const starterVersion = localStorage.getItem('starterMediaVersion') || '0';
 
-    // Version 3: Added UNN research papers
-    const CURRENT_VERSION = '3';
+    // Version 4: Added Radio Garden stations and BBC Igbo
+    const CURRENT_VERSION = '4';
 
     // Remove old starter media if version changed
     if (starterVersion !== CURRENT_VERSION) {
@@ -1046,6 +1101,7 @@ function initVocabulary() {
 function addWord() {
     const igboWord = document.getElementById('word-igbo').value;
     const englishMeaning = document.getElementById('word-english').value;
+    const examples = document.getElementById('word-examples').value;
     const notes = document.getElementById('word-notes').value;
 
     const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
@@ -1054,6 +1110,7 @@ function addWord() {
         id: Date.now(),
         igboWord,
         englishMeaning,
+        examples,
         notes,
         practices: [] // Array of practice recordings with dates
     };
@@ -1088,6 +1145,7 @@ function loadWordsList() {
                 </div>
                 <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteWord(${word.id})">Delete / Hichapụ</button>
             </div>
+            ${word.examples ? `<div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 8px; white-space: pre-wrap; font-size: 14px; color: #333;"><strong>Example Sentences / Ahịrịokwu Nlereanya:</strong><br>${word.examples}</div>` : ''}
             ${word.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d; margin-top: 8px;">${word.notes}</div>` : ''}
             <div style="margin-top: 12px;">
                 <strong style="font-size: 14px;">Practice Count / Ọnụ Ọgụgụ Omume: ${word.practices.length}</strong>
