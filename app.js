@@ -70,8 +70,8 @@ const STARTER_MEDIA = [
         id: 'starter-2',
         title: 'ABS Akụkọ Ụwa (Igbo News) / Akụkọ Ụwa Igbo',
         type: 'page',
-        link: 'https://www.youtube.com/@ABSakukouwa',
-        notes: 'Daily Igbo news updates / Akụkọ ụwa Igbo kwa ụbọchị',
+        link: 'https://www.youtube.com/watch?v=EI7umg0WH4Q&list=PLLnE8CV3IUR8HgVzKduK1isUk2-2R1Z86',
+        notes: 'Anambra Broadcasting daily news in Igbo / Akụkọ ụwa Anambra kwa ụbọchị n\'asụsụ Igbo',
         status: 'not-started',
         reflection: null,
         file: null,
@@ -154,6 +154,13 @@ function switchScreen(screen) {
     document.querySelectorAll('.screen').forEach(s => {
         s.classList.toggle('active', s.id === `${screen}-screen`);
     });
+}
+
+function scrollToPrompt() {
+    const promptCard = document.querySelector('.prompt-card');
+    if (promptCard) {
+        promptCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // Daily Prompt
@@ -421,10 +428,27 @@ function renderCalendar() {
 
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
-        dayEl.textContent = day;
 
-        if (recordingDates.has(dateString)) {
+        // Check what activities happened on this day
+        const dayRecordings = recordings.filter(r => r.date === dateString);
+        const hasPrompt = dayRecordings.some(r => r.type === 'prompt');
+        const hasMedia = dayRecordings.some(r => r.type === 'media');
+
+        if (hasPrompt && hasMedia) {
+            // Both activities - show star and number
+            dayEl.innerHTML = `<div style="font-size: 14px;">⭐</div><div style="font-size: 8px; margin-top: -2px;">${day}</div>`;
             dayEl.classList.add('completed');
+        } else if (hasPrompt) {
+            // Only prompt - show thought bubble and number
+            dayEl.innerHTML = `<div style="font-size: 12px;">💭</div><div style="font-size: 8px; margin-top: -2px;">${day}</div>`;
+            dayEl.classList.add('completed');
+        } else if (hasMedia) {
+            // Only media - show film and number
+            dayEl.innerHTML = `<div style="font-size: 12px;">🎬</div><div style="font-size: 8px; margin-top: -2px;">${day}</div>`;
+            dayEl.classList.add('completed');
+        } else {
+            // No activity - just show day number
+            dayEl.textContent = day;
         }
 
         if (dateString === now.toDateString()) {
@@ -576,15 +600,16 @@ function loadMediaList() {
         const embedContent = getMediaEmbed(item);
 
         return `
-        <div class="media-item">
+        <div class="media-item${item.isPreloaded ? ' preloaded-media' : ''}">
             <div class="media-header">
                 <div>
-                    <div class="media-title">${item.title}</div>
+                    <div class="media-title">
+                        ${item.title}
+                        ${item.isPreloaded ? '<span class="starter-badge">⭐ Starter Library / Ọba Akwụkwọ Mmalite</span>' : ''}
+                    </div>
                     <span class="media-type">${item.type}</span>
                 </div>
-                <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMedia(${item.id})">
-                    Delete / Hichapụ
-                </button>
+                ${!item.isPreloaded ? `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMedia('${item.id}')">Delete / Hichapụ</button>` : ''}
             </div>
             ${embedContent}
             ${item.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d;">${item.notes}</div>` : ''}
@@ -667,7 +692,7 @@ function extractYouTubeId(url) {
 
 function updateMediaStatus(id, newStatus) {
     const media = JSON.parse(localStorage.getItem('media') || '[]');
-    const item = media.find(m => m.id === id);
+    const item = media.find(m => String(m.id) === String(id));
 
     if (item) {
         const oldStatus = item.status;
@@ -684,12 +709,20 @@ function updateMediaStatus(id, newStatus) {
 }
 
 function deleteMedia(id) {
+    // Convert id to match the type in storage (string for starter media, number for user media)
+    const media = JSON.parse(localStorage.getItem('media') || '[]');
+    const item = media.find(m => String(m.id) === String(id));
+
+    if (item && item.isPreloaded) {
+        alert('Starter library items cannot be deleted. / Enweghị ike ihichapụ ihe ndị dị na ọba akwụkwọ mmalite.');
+        return;
+    }
+
     if (!confirm('Are you sure you want to delete this media item? / Ị ji n\'aka na ị chọrọ ihichapụ ihe mgbasa ozi a?')) {
         return;
     }
 
-    const media = JSON.parse(localStorage.getItem('media') || '[]');
-    const updatedMedia = media.filter(m => m.id !== id);
+    const updatedMedia = media.filter(m => String(m.id) !== String(id));
     localStorage.setItem('media', JSON.stringify(updatedMedia));
     loadMediaList();
 }
@@ -796,7 +829,7 @@ function saveModalReflection() {
         const base64Audio = reader.result;
 
         const media = JSON.parse(localStorage.getItem('media') || '[]');
-        const item = media.find(m => m.id === currentMediaId);
+        const item = media.find(m => String(m.id) === String(currentMediaId));
 
         if (item) {
             item.reflection = base64Audio;
@@ -808,7 +841,7 @@ function saveModalReflection() {
 
                 // Check if we already tracked this media completion today
                 const alreadyTracked = recordings.some(r =>
-                    r.date === today && r.type === 'media' && r.mediaId === item.id
+                    r.date === today && r.type === 'media' && String(r.mediaId) === String(item.id)
                 );
 
                 if (!alreadyTracked) {
