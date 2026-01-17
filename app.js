@@ -53,6 +53,32 @@ const PROMPTS = [
     "Talk about nature around you / Kwuo maka ọdịdị ala gbulugubu gị"
 ];
 
+// Starter Media Library - Pre-loaded content for all users
+const STARTER_MEDIA = [
+    {
+        id: 'starter-1',
+        title: 'Igbo Movies Playlist / Ndepụta Ihe Nkili Igbo',
+        type: 'movie',
+        link: 'https://www.youtube.com/playlist?list=PLBvWrvt-SVz45MbcPF0CO7iCp4JeiRSBy',
+        notes: 'Collection of Igbo movies on YouTube / Nchịkọta ihe nkili Igbo na YouTube',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-2',
+        title: 'ABS Akụkọ Ụwa (Igbo News) / Akụkọ Ụwa Igbo',
+        type: 'page',
+        link: 'https://www.youtube.com/@ABSakukouwa',
+        notes: 'Daily Igbo news updates / Akụkọ ụwa Igbo kwa ụbọchị',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    }
+];
+
 // State
 let mediaRecorder = null;
 let audioChunks = [];
@@ -67,6 +93,7 @@ let currentMediaId = null;
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     loadDailyPrompt();
+    initStarterMedia();
     loadStats();
     renderCalendar();
     loadPastRecordings();
@@ -76,6 +103,20 @@ document.addEventListener('DOMContentLoaded', () => {
     checkMicPermissionBanner();
     initShuffleButton();
 });
+
+// Starter Media Library
+function initStarterMedia() {
+    const media = JSON.parse(localStorage.getItem('media') || '[]');
+
+    // Check if starter media already exists
+    const hasStarterMedia = media.some(item => item.isPreloaded);
+
+    if (!hasStarterMedia) {
+        // Add starter media to the beginning
+        const updatedMedia = [...STARTER_MEDIA, ...media];
+        localStorage.setItem('media', JSON.stringify(updatedMedia));
+    }
+}
 
 // Mic Permission Banner
 function checkMicPermissionBanner() {
@@ -264,12 +305,13 @@ function saveRecording() {
         // Get existing recordings
         const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
 
-        // Add new recording
+        // Add new recording with activity type
         recordings.push({
             date: today,
             timestamp: new Date().toISOString(),
             prompt: prompt,
-            audio: base64Audio
+            audio: base64Audio,
+            type: 'prompt' // Track that this was a prompt response
         });
 
         localStorage.setItem('recordings', JSON.stringify(recordings));
@@ -758,6 +800,34 @@ function saveModalReflection() {
 
         if (item) {
             item.reflection = base64Audio;
+
+            // If item is marked as completed and has reflection, track as media activity
+            if (item.status === 'completed') {
+                const today = new Date().toDateString();
+                const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+
+                // Check if we already tracked this media completion today
+                const alreadyTracked = recordings.some(r =>
+                    r.date === today && r.type === 'media' && r.mediaId === item.id
+                );
+
+                if (!alreadyTracked) {
+                    recordings.push({
+                        date: today,
+                        timestamp: new Date().toISOString(),
+                        type: 'media',
+                        mediaId: item.id,
+                        mediaTitle: item.title,
+                        audio: base64Audio
+                    });
+                    localStorage.setItem('recordings', JSON.stringify(recordings));
+
+                    // Update stats and calendar
+                    loadStats();
+                    renderCalendar();
+                }
+            }
+
             localStorage.setItem('media', JSON.stringify(media));
 
             closeReflectionModal();
