@@ -57,17 +57,6 @@ const PROMPTS = [
 const STARTER_MEDIA = [
     {
         id: 'starter-1',
-        title: 'Igbo Movies Playlist / Ndepụta Ihe Nkili Igbo',
-        type: 'movie',
-        link: 'https://www.youtube.com/playlist?list=PLBvWrvt-SVz45MbcPF0CO7iCp4JeiRSBy',
-        notes: 'Collection of Igbo movies on YouTube / Nchịkọta ihe nkili Igbo na YouTube',
-        status: 'not-started',
-        reflection: null,
-        file: null,
-        isPreloaded: true
-    },
-    {
-        id: 'starter-2',
         title: 'Omenuko (Full Audiobook) / Omenuko (Akwụkwọ Ọdịyo Zuru Ezu)',
         type: 'audiobook',
         link: 'https://www.youtube.com/watch?v=LgFCWSOl3iw',
@@ -78,7 +67,7 @@ const STARTER_MEDIA = [
         isPreloaded: true
     },
     {
-        id: 'starter-3',
+        id: 'starter-2',
         title: 'Udochukwu (Igbo Movie) / Udochukwu (Ihe Nkili Igbo)',
         type: 'movie',
         link: 'https://www.youtube.com/watch?v=Fe9E1kVTul8',
@@ -89,11 +78,22 @@ const STARTER_MEDIA = [
         isPreloaded: true
     },
     {
-        id: 'starter-4',
+        id: 'starter-3',
         title: 'ABS Akụkọ Ụwa (Igbo News) / Akụkọ Ụwa Igbo',
         type: 'page',
         link: 'https://www.youtube.com/watch?v=EI7umg0WH4Q&list=PLLnE8CV3IUR8HgVzKduK1isUk2-2R1Z86',
         notes: 'Anambra Broadcasting daily news in Igbo / Akụkọ ụwa Anambra kwa ụbọchị n\'asụsụ Igbo',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-4',
+        title: 'Spoken Igbo - Pritchett Guide / Igbo A Na-Asụ - Ntuziaka Pritchett',
+        type: 'pdf',
+        link: 'https://franpritchett.com/00fwp/igbo/spilctalk.pdf',
+        notes: 'PDF guide for learning spoken Igbo / Akwụkwọ ntuziaka maka ịmụ Igbo a na-asụ',
         status: 'not-started',
         reflection: null,
         file: null,
