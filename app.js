@@ -1,20 +1,56 @@
-// Prompts list - Bilingual (English / Igbo)
+// Prompts list - Bilingual (English / Anambra Igbo)
+// User can shuffle and answer multiple prompts per day
 const PROMPTS = [
     "Describe your day / Kọwaa ụbọchị gị",
-    "Talk about what you ate / Kwuo maka ihe i riri",
+    "Talk about what you ate / Kwuo maka ihe i liri",
     "Explain something you're working on / Kọwaa ihe ị na-arụ",
-    "What are you grateful for today? / Gịnị ka i nwere ekele maka ya taa?",
-    "Describe how you're feeling and why / Kọwaa ka ị na-eche na ihe kpatara ya",
-    "Talk about your health/self-care practices / Kwuo maka ahụ ike gị/nlekọta onwe gị",
-    "Describe a personal goal you're working toward / Kọwaa ebumnuche nke onwe gị ị na-arụ ọrụ",
-    "What's something you've been thinking about? / Gịnị bụ ihe ị na-eche echiche?",
-    "Reflect on progress toward a long-term goal / Tụgharịa uche na ọganihu n'ebe ebumnuche ogologo oge",
-    "Talk about a memory that came to mind / Kwuo maka ncheta batara n'uche",
+    "What are you grateful for today? / Gịnị ka i nwere ekele maka ya taata?",
+    "Describe how you're feeling / Kọwaa otụ ọ dị gị",
+    "Talk about your health / Kwuo maka ahụ ike gị",
+    "Describe a personal goal / Kọwaa ebumnuche gị",
+    "What have you been thinking about? / Gịnị ka ị na-eche n'uche?",
+    "Reflect on your progress / Tụgharịa uche na ọganihu gị",
+    "Talk about a memory / Kwuo maka ihe ncheta",
     "Describe your ideal day / Kọwaa ụbọchị kachasị mma gị",
-    "What did you learn about yourself recently? / Gịnị ka ị mụtara gbasara onwe gị n'oge na-adịbeghị anya?",
-    "Discuss a challenge you're facing at work / Kwurịta ihe ịma aka ị na-eche ihu n'ọrụ",
-    "What made you laugh today? / Gịnị mere gị ọchị taa?",
-    "Describe someone who inspires you / Kọwaa onye na-akpali gị mmụọ"
+    "What did you learn recently? / Gịnị ka ị mụtara n'oge na-adịbeghị anya?",
+    "Discuss a challenge you're facing / Kwurịta ihe ịma aka ị na-eche ihu",
+    "What made you laugh today? / Gịnị mere gị ọchị taata?",
+    "Describe someone who inspires you / Kọwaa onye na-akpali gị mmụọ",
+    "What are you looking forward to? / Gịnị ka ị na-atụ anya ya?",
+    "Talk about your family / Kwuo maka ezinụlọ gị",
+    "Describe your morning routine / Kọwaa ihe ị na-eme n'ụtụtụ",
+    "What's your favorite place? / Ebee ka ị kacha hụ n'anya?",
+    "Talk about a recent conversation / Kwuo maka mkparịta ụka i nwere n'oge na-adịbeghị anya",
+    "Describe your work / Kọwaa ọrụ gị",
+    "What makes you happy? / Gịnị na-eme gị obi ụtọ?",
+    "Talk about your hobbies / Kwuo maka ihe ntụlụndụ gị",
+    "Describe a place you'd like to visit / Kọwaa ebe ị ga-achọ ịga",
+    "What are you proud of? / Gịnị ka ị na-anya isi maka ya?",
+    "Talk about your friends / Kwuo maka ndị enyi gị",
+    "Describe your evening / Kọwaa mgbede gị",
+    "What's something new you tried? / Gịnị bụ ihe ọhụlụ ị nwalere?",
+    "Talk about your plans for tomorrow / Kwuo maka atụmatụ gị maka echi",
+    "Describe your favorite food / Kọwaa nli ị kacha hụ n'anya",
+    "What's on your mind right now? / Gịnị dị gị n'uche ugbua?",
+    "Talk about your weekend / Kwuo maka izu ụka gị",
+    "Describe a book or story you enjoyed / Kọwaa akwụkwọ ma ọ bụ akụkọ masịlị gị",
+    "What did you do yesterday? / Gịnị ka i mere ụnyaahụ?",
+    "Talk about your home / Kwuo maka ụlọ gị",
+    "Describe your favorite season / Kọwaa oge afọ ị kacha hụ n'anya",
+    "What are you worried about? / Gịnị na-echegbu gị?",
+    "Talk about a skill you're learning / Kwuo maka nka ị na-amụ",
+    "Describe your neighborhood / Kọwaa mpaghala ebe ị bi",
+    "What motivates you? / Gịnị na-akpali gị?",
+    "Talk about your childhood / Kwuo maka oge ị bụ nwata",
+    "Describe a typical weekday / Kọwaa ụbọchị ọrụ gị",
+    "What do you value most? / Gịnị ka ị kpọlọ ihe n'ihu kalịa?",
+    "Talk about your sleep / Kwuo maka ụla gị",
+    "Describe your exercise routine / Kọwaa mmega ahụ gị",
+    "What do you want to improve? / Gịnị ka ị chọrọ imeziwanye?",
+    "Talk about your favorite music / Kwuo maka egwu ị kacha hụ n'anya",
+    "Describe your dreams and aspirations / Kọwaa nlọ gị ma ọ bụ ihe ị chọrọ ime",
+    "What brings you peace? / Gịnị na-ewetala gị udo?",
+    "Talk about nature around you / Kwuo maka ọdịdị ala gbulugubu gị"
 ];
 
 // State
@@ -38,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMediaLibrary();
     checkTodayCompletion();
     checkMicPermissionBanner();
+    initShuffleButton();
 });
 
 // Mic Permission Banner
@@ -94,6 +131,25 @@ function loadDailyPrompt() {
     }
 
     document.getElementById('daily-prompt').textContent = prompt;
+}
+
+// Shuffle Button
+function initShuffleButton() {
+    const shuffleBtn = document.getElementById('shuffle-prompt-btn');
+    shuffleBtn.addEventListener('click', shufflePrompt);
+}
+
+function shufflePrompt() {
+    // Get a random prompt
+    const randomIndex = Math.floor(Math.random() * PROMPTS.length);
+    const newPrompt = PROMPTS[randomIndex];
+
+    // Update the display
+    document.getElementById('daily-prompt').textContent = newPrompt;
+
+    // Save it so it persists for this session
+    const today = new Date().toDateString();
+    localStorage.setItem(`prompt-${today}`, newPrompt);
 }
 
 // Recording
@@ -300,8 +356,8 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
-    // Add day headers - Bilingual (English / Igbo)
-    const dayHeaders = ['Sun/Ụka', 'Mon/Mọn', 'Tue/Tiu', 'Wed/Wen', 'Thu/Tọs', 'Fri/Fraị', 'Sat/Sat'];
+    // Add day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     dayHeaders.forEach(day => {
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day header';
@@ -352,16 +408,37 @@ function loadPastRecordings() {
 
     list.innerHTML = recordings.map((recording, index) => `
         <div class="recording-item">
-            <span class="recording-date">${new Date(recording.timestamp).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })}</span>
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <span class="recording-date">${new Date(recording.timestamp).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })}</span>
+                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteRecording('${recording.timestamp}')">
+                    Delete / Hichapụ
+                </button>
+            </div>
             <div class="recording-prompt">${recording.prompt}</div>
             <audio controls src="${recording.audio}"></audio>
         </div>
     `).join('');
+}
+
+function deleteRecording(timestamp) {
+    if (!confirm('Are you sure you want to delete this recording? / Ị ji n\'aka na ị chọrọ ihichapụ ndekọ a?')) {
+        return;
+    }
+
+    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+    const updatedRecordings = recordings.filter(r => r.timestamp !== timestamp);
+    localStorage.setItem('recordings', JSON.stringify(updatedRecordings));
+
+    // Refresh displays
+    loadPastRecordings();
+    loadStats();
+    renderCalendar();
+    checkTodayCompletion();
 }
 
 // Media Library
@@ -463,6 +540,9 @@ function loadMediaList() {
                     <div class="media-title">${item.title}</div>
                     <span class="media-type">${item.type}</span>
                 </div>
+                <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMedia(${item.id})">
+                    Delete / Hichapụ
+                </button>
             </div>
             ${embedContent}
             ${item.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d;">${item.notes}</div>` : ''}
@@ -559,6 +639,17 @@ function updateMediaStatus(id, newStatus) {
             loadMediaList();
         }
     }
+}
+
+function deleteMedia(id) {
+    if (!confirm('Are you sure you want to delete this media item? / Ị ji n\'aka na ị chọrọ ihichapụ ihe mgbasa ozi a?')) {
+        return;
+    }
+
+    const media = JSON.parse(localStorage.getItem('media') || '[]');
+    const updatedMedia = media.filter(m => m.id !== id);
+    localStorage.setItem('media', JSON.stringify(updatedMedia));
+    loadMediaList();
 }
 
 function openReflectionModal(mediaId, mediaTitle) {

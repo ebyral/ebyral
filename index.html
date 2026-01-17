@@ -32,7 +32,12 @@
 
             <!-- Daily Prompt -->
             <div class="prompt-card">
-                <h2>Today's Prompt / Ajụjụ Taa</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2 style="margin: 0;">Today's Prompt / Ajụjụ Taa</h2>
+                    <button id="shuffle-prompt-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                        🔀 Shuffle / Gbanwee
+                    </button>
+                </div>
                 <p class="prompt-text" id="daily-prompt">Loading... / Na-ebudata...</p>
             </div>
 
@@ -118,7 +123,7 @@
                         <label for="media-type">Type / Ụdị</label>
                         <select id="media-type" required>
                             <option value="">Select type... / Họrọ ụdị...</option>
-                            <option value="movie">Movie / Ihe Nkiri</option>
+                            <option value="movie">Movie / Ihe Nkili</option>
                             <option value="audiobook">Audiobook / Akwụkwọ Ọdịyo</option>
                             <option value="story">Story / Akụkọ</option>
                             <option value="pdf">PDF Document / Akwụkwọ PDF</option>
