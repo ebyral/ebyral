@@ -129,14 +129,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // Starter Media Library
 function initStarterMedia() {
     const media = JSON.parse(localStorage.getItem('media') || '[]');
+    const starterVersion = localStorage.getItem('starterMediaVersion') || '0';
 
-    // Check if starter media already exists
-    const hasStarterMedia = media.some(item => item.isPreloaded);
+    // Version 2: Updated starter media (removed playlist, added PDF)
+    const CURRENT_VERSION = '2';
 
-    if (!hasStarterMedia) {
-        // Add starter media to the beginning
-        const updatedMedia = [...STARTER_MEDIA, ...media];
+    // Remove old starter media if version changed
+    if (starterVersion !== CURRENT_VERSION) {
+        // Remove all old starter media
+        const userMedia = media.filter(item => !item.isPreloaded);
+
+        // Add new starter media at the beginning
+        const updatedMedia = [...STARTER_MEDIA, ...userMedia];
         localStorage.setItem('media', JSON.stringify(updatedMedia));
+        localStorage.setItem('starterMediaVersion', CURRENT_VERSION);
+    } else {
+        // Check if starter media already exists
+        const hasStarterMedia = media.some(item => item.isPreloaded);
+
+        if (!hasStarterMedia) {
+            // Add starter media to the beginning
+            const updatedMedia = [...STARTER_MEDIA, ...media];
+            localStorage.setItem('media', JSON.stringify(updatedMedia));
+            localStorage.setItem('starterMediaVersion', CURRENT_VERSION);
+        }
     }
 }
 
@@ -661,6 +677,15 @@ function getMediaEmbed(item) {
 
     // If there's a link
     if (item.link) {
+        // Check if it's a PDF link
+        if (item.link.toLowerCase().endsWith('.pdf')) {
+            return `
+                <div class="media-embed pdf-embed">
+                    <iframe src="${item.link}#toolbar=0" title="${item.title}"></iframe>
+                </div>
+            `;
+        }
+
         // Check if it's a YouTube link
         const youtubeId = extractYouTubeId(item.link);
         if (youtubeId) {
