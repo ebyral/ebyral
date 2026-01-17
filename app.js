@@ -117,7 +117,16 @@ async function startRecording() {
         localStorage.setItem('mic-banner-dismissed', 'true');
         document.getElementById('mic-permission-banner').classList.add('hidden');
 
-        mediaRecorder = new MediaRecorder(stream);
+        // Use compatible audio format for Safari
+        let options = { mimeType: 'audio/mp4' };
+        if (!MediaRecorder.isTypeSupported('audio/mp4')) {
+            options = { mimeType: 'audio/webm' };
+        }
+        if (!MediaRecorder.isTypeSupported('audio/webm')) {
+            options = {}; // Let browser choose
+        }
+
+        mediaRecorder = new MediaRecorder(stream, options);
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {
@@ -125,7 +134,8 @@ async function startRecording() {
         };
 
         mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const mimeType = mediaRecorder.mimeType || 'audio/mp4';
+            const audioBlob = new Blob(audioChunks, { type: mimeType });
             currentAudioBlob = audioBlob;
             const audioUrl = URL.createObjectURL(audioBlob);
 
@@ -573,7 +583,16 @@ async function startModalRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        modalMediaRecorder = new MediaRecorder(stream);
+        // Use compatible audio format for Safari
+        let options = { mimeType: 'audio/mp4' };
+        if (!MediaRecorder.isTypeSupported('audio/mp4')) {
+            options = { mimeType: 'audio/webm' };
+        }
+        if (!MediaRecorder.isTypeSupported('audio/webm')) {
+            options = {}; // Let browser choose
+        }
+
+        modalMediaRecorder = new MediaRecorder(stream, options);
         modalAudioChunks = [];
 
         modalMediaRecorder.ondataavailable = (event) => {
@@ -581,7 +600,8 @@ async function startModalRecording() {
         };
 
         modalMediaRecorder.onstop = () => {
-            const audioBlob = new Blob(modalAudioChunks, { type: 'audio/webm' });
+            const mimeType = modalMediaRecorder.mimeType || 'audio/mp4';
+            const audioBlob = new Blob(modalAudioChunks, { type: mimeType });
             currentModalAudioBlob = audioBlob;
             const audioUrl = URL.createObjectURL(audioBlob);
 
