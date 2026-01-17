@@ -39,6 +39,7 @@ body {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
+    line-height: 1.2;
 }
 
 .nav-btn.active {
@@ -749,8 +750,8 @@ body {
     }
 
     .nav-btn {
-        padding: 10px;
-        font-size: 15px;
+        padding: 8px 6px;
+        font-size: 13px;
     }
 
     .header {
@@ -799,10 +800,11 @@ body {
     }
 
     .calendar-day.header {
-        font-size: 8px;
+        font-size: 7px;
         font-weight: 700;
         min-height: auto;
-        padding: 4px 2px;
+        padding: 4px 1px;
+        line-height: 1.1;
     }
 
     .calendar-day.today {

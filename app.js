@@ -1,20 +1,20 @@
-// Prompts list
+// Prompts list - Bilingual (English / Igbo)
 const PROMPTS = [
-    "Describe your day",
-    "Talk about what you ate",
-    "Explain something you're working on",
-    "What are you grateful for today?",
-    "Describe how you're feeling and why",
-    "Talk about your health/self-care practices",
-    "Describe a personal goal you're working toward",
-    "What's something you've been thinking about?",
-    "Reflect on progress toward a long-term goal",
-    "Talk about a memory that came to mind",
-    "Describe your ideal day",
-    "What did you learn about yourself recently?",
-    "Discuss a challenge you're facing at work",
-    "What made you laugh today?",
-    "Describe someone who inspires you"
+    "Describe your day / Kọwaa ụbọchị gị",
+    "Talk about what you ate / Kwuo maka ihe i riri",
+    "Explain something you're working on / Kọwaa ihe ị na-arụ",
+    "What are you grateful for today? / Gịnị ka i nwere ekele maka ya taa?",
+    "Describe how you're feeling and why / Kọwaa ka ị na-eche na ihe kpatara ya",
+    "Talk about your health/self-care practices / Kwuo maka ahụ ike gị/nlekọta onwe gị",
+    "Describe a personal goal you're working toward / Kọwaa ebumnuche nke onwe gị ị na-arụ ọrụ",
+    "What's something you've been thinking about? / Gịnị bụ ihe ị na-eche echiche?",
+    "Reflect on progress toward a long-term goal / Tụgharịa uche na ọganihu n'ebe ebumnuche ogologo oge",
+    "Talk about a memory that came to mind / Kwuo maka ncheta batara n'uche",
+    "Describe your ideal day / Kọwaa ụbọchị kachasị mma gị",
+    "What did you learn about yourself recently? / Gịnị ka ị mụtara gbasara onwe gị n'oge na-adịbeghị anya?",
+    "Discuss a challenge you're facing at work / Kwurịta ihe ịma aka ị na-eche ihu n'ọrụ",
+    "What made you laugh today? / Gịnị mere gị ọchị taa?",
+    "Describe someone who inspires you / Kọwaa onye na-akpali gị mmụọ"
 ];
 
 // State
@@ -300,8 +300,8 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
-    // Add day headers
-    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    // Add day headers - Bilingual (English / Igbo)
+    const dayHeaders = ['Sun/Ụka', 'Mon/Mọn', 'Tue/Tiu', 'Wed/Wen', 'Thu/Tọs', 'Fri/Fraị', 'Sat/Sat'];
     dayHeaders.forEach(day => {
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day header';
@@ -343,7 +343,7 @@ function loadPastRecordings() {
     const list = document.getElementById('past-recordings-list');
 
     if (recordings.length === 0) {
-        list.innerHTML = '<p style="color: #6c757d; text-align: center;">No recordings yet</p>';
+        list.innerHTML = '<p style="color: #6c757d; text-align: center;">No recordings yet / Enweghị ndekọ ọ bụla</p>';
         return;
     }
 
@@ -449,7 +449,7 @@ function loadMediaList() {
     const list = document.getElementById('media-list');
 
     if (media.length === 0) {
-        list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">No media added yet</p>';
+        list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">No media added yet / Enwebeghị mgbasa ozi agbakwunyere</p>';
         return;
     }
 
@@ -468,17 +468,17 @@ function loadMediaList() {
             ${item.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d;">${item.notes}</div>` : ''}
             <div class="media-status">
                 <select class="status-select" onchange="updateMediaStatus(${item.id}, this.value)">
-                    <option value="not-started" ${item.status === 'not-started' ? 'selected' : ''}>Not Started</option>
-                    <option value="in-progress" ${item.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="not-started" ${item.status === 'not-started' ? 'selected' : ''}>Not Started / Amalitebeghị</option>
+                    <option value="in-progress" ${item.status === 'in-progress' ? 'selected' : ''}>In Progress / Na-aga N'ihu</option>
+                    <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>Completed / Emezuola</option>
                 </select>
             </div>
             <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="openReflectionModal(${item.id}, '${item.title.replace(/'/g, "\\'")}')">
-                ${item.reflection ? '🎤 Update Reflection' : '🎤 Record What I Learned'}
+                ${item.reflection ? '🎤 Update Reflection / Melite Ntụgharị Uche' : '🎤 Record What I Learned / Dekọọ Ihe M Mụtara'}
             </button>
             ${item.reflection ? `
                 <div class="media-reflection">
-                    <p><strong>My Reflection:</strong></p>
+                    <p><strong>My Reflection / Ntụgharị Uche M:</strong></p>
                     <audio controls src="${item.reflection}"></audio>
                 </div>
             ` : ''}
@@ -518,7 +518,7 @@ function getMediaEmbed(item) {
             <div class="media-link">
                 <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.link}</a>
                 <button class="open-link-btn" onclick="window.open('${item.link}', '_blank')">
-                    Open Link →
+                    Open Link / Mepee Njikọ →
                 </button>
             </div>
         `;
@@ -564,6 +564,7 @@ function updateMediaStatus(id, newStatus) {
 function openReflectionModal(mediaId, mediaTitle) {
     currentMediaId = mediaId;
     document.getElementById('reflection-media-title').textContent = mediaTitle;
+    document.getElementById('reflection-media-title-igbo').textContent = mediaTitle;
     document.getElementById('reflection-modal').classList.remove('hidden');
 
     // Reset modal recording state

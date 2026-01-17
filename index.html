@@ -10,21 +10,21 @@
     <div class="container">
         <!-- Navigation -->
         <nav class="nav">
-            <button class="nav-btn active" data-screen="practice">Practice</button>
-            <button class="nav-btn" data-screen="library">Library</button>
+            <button class="nav-btn active" data-screen="practice">Practice / Omume</button>
+            <button class="nav-btn" data-screen="library">Library / Ọba Akwụkwọ</button>
         </nav>
 
         <!-- Practice Screen -->
         <div id="practice-screen" class="screen active">
             <div class="header">
-                <h1>Daily Practice</h1>
+                <h1>Daily Practice / Omume Kwa Ụbọchị</h1>
                 <div class="streak-info">
                     <div class="streak-item">
-                        <span class="streak-label">Streak</span>
+                        <span class="streak-label">Streak / Usoro</span>
                         <span class="streak-value" id="current-streak">0</span>
                     </div>
                     <div class="streak-item">
-                        <span class="streak-label">Total</span>
+                        <span class="streak-label">Total / Ngụkọta</span>
                         <span class="streak-value" id="total-recordings">0</span>
                     </div>
                 </div>
@@ -32,24 +32,24 @@
 
             <!-- Daily Prompt -->
             <div class="prompt-card">
-                <h2>Today's Prompt</h2>
-                <p class="prompt-text" id="daily-prompt">Loading...</p>
+                <h2>Today's Prompt / Ajụjụ Taa</h2>
+                <p class="prompt-text" id="daily-prompt">Loading... / Na-ebudata...</p>
             </div>
 
             <!-- Microphone Permission Banner -->
             <div id="mic-permission-banner" class="mic-permission-banner hidden">
-                <h4>🎤 Microphone Access Needed</h4>
-                <p>To record your practice, please allow microphone access when prompted.</p>
+                <h4>🎤 Microphone Access Needed / Achọrọ Igwe Okwu</h4>
+                <p>To record your practice, please allow microphone access when prompted.<br>Iji dekọọ omume gị, biko kwere ka igwe okwu mgbe a jụrụ gị.</p>
                 <div class="instructions">
-                    <strong>On iPhone:</strong>
+                    <strong>On iPhone / Na iPhone:</strong>
                     <ol>
-                        <li>Tap the "Start Recording" button below</li>
-                        <li>A popup will appear asking for microphone access</li>
-                        <li>Tap "Allow" to grant permission</li>
+                        <li>Tap the "Start Recording" button below / Pịa bọtịnụ "Malite Ndekọ" n'okpuru</li>
+                        <li>A popup will appear asking for microphone access / Otu popup ga-apụta na-arịọ ka igwe okwu</li>
+                        <li>Tap "Allow" to grant permission / Pịa "Kwere" inye ikike</li>
                     </ol>
-                    <p style="margin-top: 8px;"><strong>If you accidentally blocked it:</strong> Go to Settings → Safari → This Website → Microphone → Allow</p>
+                    <p style="margin-top: 8px;"><strong>If you accidentally blocked it / Ọ bụrụ na ị gbochiri ya na mberede:</strong> Go to Settings → Safari → This Website → Microphone → Allow / Gaa na Ntọala → Safari → Webụsaịtị a → Igwe okwu → Kwere</p>
                 </div>
-                <button class="dismiss-banner" onclick="dismissMicBanner()">Got it!</button>
+                <button class="dismiss-banner" onclick="dismissMicBanner()">Got it! / Aghọtara m!</button>
             </div>
 
             <!-- Recording Section -->
@@ -57,14 +57,14 @@
                 <div id="recording-controls">
                     <button id="record-btn" class="btn btn-primary">
                         <span class="btn-icon">🎤</span>
-                        Start Recording
+                        Start Recording / Malite Ndekọ
                     </button>
                     <div id="recording-status" class="recording-status hidden">
                         <div class="recording-status-text">
                             <span class="recording-indicator"></span>
-                            Recording...
+                            Recording... / Na-edekọ...
                         </div>
-                        <button id="stop-btn" class="btn btn-danger">Stop</button>
+                        <button id="stop-btn" class="btn btn-danger">Stop / Kwụsị</button>
                     </div>
                 </div>
 
@@ -72,8 +72,8 @@
                 <div id="playback-section" class="hidden">
                     <audio id="audio-player" controls></audio>
                     <div class="playback-controls">
-                        <button id="rerecord-btn" class="btn btn-secondary">Re-record</button>
-                        <button id="save-btn" class="btn btn-success">Mark Complete</button>
+                        <button id="rerecord-btn" class="btn btn-secondary">Re-record / Dekọọkwa</button>
+                        <button id="save-btn" class="btn btn-success">Mark Complete / Kaa Zuru Ezu</button>
                     </div>
                 </div>
 
@@ -81,20 +81,20 @@
                 <div id="completion-message" class="hidden">
                     <div class="completion-card">
                         <span class="completion-icon">✓</span>
-                        <p>Great work! You've completed today's practice.</p>
+                        <p>Great work! You've completed today's practice.<br>Ọrụ magburu onwe ya! I mezuola omume taa.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Calendar -->
             <div class="calendar-section">
-                <h3>Practice Calendar</h3>
+                <h3>Practice Calendar / Kalenda Omume</h3>
                 <div id="calendar" class="calendar"></div>
             </div>
 
             <!-- Past Recordings -->
             <div class="past-recordings-section">
-                <h3>Past Recordings</h3>
+                <h3>Past Recordings / Ndekọ Ndị Gara Aga</h3>
                 <div id="past-recordings-list" class="recordings-list"></div>
             </div>
         </div>
@@ -102,50 +102,50 @@
         <!-- Library Screen -->
         <div id="library-screen" class="screen">
             <div class="header">
-                <h1>Media Library</h1>
-                <button id="add-media-btn" class="btn btn-primary">+ Add Media</button>
+                <h1>Media Library / Ọba Akwụkwọ Mgbasa Ozi</h1>
+                <button id="add-media-btn" class="btn btn-primary">+ Add Media / Tinye Mgbasa Ozi</button>
             </div>
 
             <!-- Add Media Form -->
             <div id="add-media-form" class="form-card hidden">
-                <h3>Add New Media</h3>
+                <h3>Add New Media / Tinye Mgbasa Ozi Ọhụrụ</h3>
                 <form id="media-form">
                     <div class="form-group">
-                        <label for="media-title">Title</label>
+                        <label for="media-title">Title / Aha</label>
                         <input type="text" id="media-title" required>
                     </div>
                     <div class="form-group">
-                        <label for="media-type">Type</label>
+                        <label for="media-type">Type / Ụdị</label>
                         <select id="media-type" required>
-                            <option value="">Select type...</option>
-                            <option value="movie">Movie</option>
-                            <option value="audiobook">Audiobook</option>
-                            <option value="story">Story</option>
-                            <option value="pdf">PDF Document</option>
-                            <option value="page">Web Page</option>
+                            <option value="">Select type... / Họrọ ụdị...</option>
+                            <option value="movie">Movie / Ihe Nkiri</option>
+                            <option value="audiobook">Audiobook / Akwụkwọ Ọdịyo</option>
+                            <option value="story">Story / Akụkọ</option>
+                            <option value="pdf">PDF Document / Akwụkwọ PDF</option>
+                            <option value="page">Web Page / Peeji Webụ</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="media-link">Link (YouTube, website, etc.)</label>
+                        <label for="media-link">Link (YouTube, website, etc.) / Njikọ (YouTube, webụsaịtị, na ndị ọzọ)</label>
                         <input type="url" id="media-link" placeholder="https://...">
                         <small style="color: #6c757d; font-size: 13px; display: block; margin-top: 4px;">
-                            YouTube videos will play directly in the app
+                            YouTube videos will play directly in the app / Vidiyo YouTube ga-egwu ozugbo na ngwa ahụ
                         </small>
                     </div>
                     <div class="form-group">
-                        <label for="media-file">Or Upload a PDF</label>
+                        <label for="media-file">Or Upload a PDF / Ma ọ bụ Bulite PDF</label>
                         <input type="file" id="media-file" accept=".pdf,application/pdf">
                         <small style="color: #6c757d; font-size: 13px; display: block; margin-top: 4px;">
-                            PDF will be stored and viewable in the app
+                            PDF will be stored and viewable in the app / A ga-echekwa PDF ma hụ ya na ngwa ahụ
                         </small>
                     </div>
                     <div class="form-group">
-                        <label for="media-notes">Notes (optional)</label>
-                        <textarea id="media-notes" rows="2" placeholder="Add any notes..."></textarea>
+                        <label for="media-notes">Notes (optional) / Ndetu (Nhọrọ)</label>
+                        <textarea id="media-notes" rows="2" placeholder="Add any notes... / Tinye ndetu ọ bụla..."></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-success">Save</button>
-                        <button type="button" id="cancel-media-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-success">Save / Chekwaa</button>
+                        <button type="button" id="cancel-media-btn" class="btn btn-secondary">Cancel / Kagbuo</button>
                     </div>
                 </form>
             </div>
@@ -156,29 +156,29 @@
             <!-- Media Reflection Modal -->
             <div id="reflection-modal" class="modal hidden">
                 <div class="modal-content">
-                    <h3>Record Your Reflection</h3>
-                    <p class="modal-subtitle">What did you learn from <span id="reflection-media-title"></span>?</p>
+                    <h3>Record Your Reflection / Dekọọ Ntụgharị Uche Gị</h3>
+                    <p class="modal-subtitle">What did you learn from <span id="reflection-media-title"></span>? / Gịnị ka ị mụtara site na <span id="reflection-media-title-igbo"></span>?</p>
                     <div class="modal-recording">
                         <button id="modal-record-btn" class="btn btn-primary">
                             <span class="btn-icon">🎤</span>
-                            Start Recording
+                            Start Recording / Malite Ndekọ
                         </button>
                         <div id="modal-recording-status" class="recording-status hidden">
                             <div class="recording-status-text">
                                 <span class="recording-indicator"></span>
-                                Recording...
+                                Recording... / Na-edekọ...
                             </div>
-                            <button id="modal-stop-btn" class="btn btn-danger">Stop</button>
+                            <button id="modal-stop-btn" class="btn btn-danger">Stop / Kwụsị</button>
                         </div>
                         <div id="modal-playback" class="hidden">
                             <audio id="modal-audio-player" controls></audio>
                             <div class="playback-controls">
-                                <button id="modal-rerecord-btn" class="btn btn-secondary">Re-record</button>
-                                <button id="modal-save-btn" class="btn btn-success">Save Reflection</button>
+                                <button id="modal-rerecord-btn" class="btn btn-secondary">Re-record / Dekọọkwa</button>
+                                <button id="modal-save-btn" class="btn btn-success">Save Reflection / Chekwaa Ntụgharị Uche</button>
                             </div>
                         </div>
                     </div>
-                    <button id="modal-close-btn" class="btn btn-secondary">Close</button>
+                    <button id="modal-close-btn" class="btn btn-secondary">Close / Mechie</button>
                 </div>
             </div>
         </div>
