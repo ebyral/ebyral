@@ -111,36 +111,36 @@ function initRecording() {
 
 async function startRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
 
         // Hide banner once permission is granted
         localStorage.setItem('mic-banner-dismissed', 'true');
         document.getElementById('mic-permission-banner').classList.add('hidden');
 
-        // Use compatible audio format for Safari
-        let options = { mimeType: 'audio/mp4' };
-        if (!MediaRecorder.isTypeSupported('audio/mp4')) {
-            options = { mimeType: 'audio/webm' };
-        }
-        if (!MediaRecorder.isTypeSupported('audio/webm')) {
-            options = {}; // Let browser choose
-        }
-
-        mediaRecorder = new MediaRecorder(stream, options);
+        // Let Safari choose the best format - don't force mimeType
+        mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
+            if (event.data && event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
         };
 
         mediaRecorder.onstop = () => {
-            const mimeType = mediaRecorder.mimeType || 'audio/mp4';
-            const audioBlob = new Blob(audioChunks, { type: mimeType });
+            const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
             currentAudioBlob = audioBlob;
             const audioUrl = URL.createObjectURL(audioBlob);
 
             const audioPlayer = document.getElementById('audio-player');
             audioPlayer.src = audioUrl;
+            audioPlayer.load(); // Force reload
 
             // Show playback section
             document.getElementById('recording-controls').classList.add('hidden');
@@ -150,7 +150,7 @@ async function startRecording() {
             stream.getTracks().forEach(track => track.stop());
         };
 
-        mediaRecorder.start();
+        mediaRecorder.start(1000); // Collect data every second
 
         // Update UI
         document.getElementById('record-btn').classList.add('hidden');
@@ -581,32 +581,32 @@ function closeReflectionModal() {
 
 async function startModalRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
 
-        // Use compatible audio format for Safari
-        let options = { mimeType: 'audio/mp4' };
-        if (!MediaRecorder.isTypeSupported('audio/mp4')) {
-            options = { mimeType: 'audio/webm' };
-        }
-        if (!MediaRecorder.isTypeSupported('audio/webm')) {
-            options = {}; // Let browser choose
-        }
-
-        modalMediaRecorder = new MediaRecorder(stream, options);
+        // Let Safari choose the best format - don't force mimeType
+        modalMediaRecorder = new MediaRecorder(stream);
         modalAudioChunks = [];
 
         modalMediaRecorder.ondataavailable = (event) => {
-            modalAudioChunks.push(event.data);
+            if (event.data && event.data.size > 0) {
+                modalAudioChunks.push(event.data);
+            }
         };
 
         modalMediaRecorder.onstop = () => {
-            const mimeType = modalMediaRecorder.mimeType || 'audio/mp4';
-            const audioBlob = new Blob(modalAudioChunks, { type: mimeType });
+            const audioBlob = new Blob(modalAudioChunks, { type: modalMediaRecorder.mimeType });
             currentModalAudioBlob = audioBlob;
             const audioUrl = URL.createObjectURL(audioBlob);
 
             const audioPlayer = document.getElementById('modal-audio-player');
             audioPlayer.src = audioUrl;
+            audioPlayer.load(); // Force reload
 
             // Show playback section
             document.getElementById('modal-record-btn').classList.add('hidden');
@@ -616,7 +616,7 @@ async function startModalRecording() {
             stream.getTracks().forEach(track => track.stop());
         };
 
-        modalMediaRecorder.start();
+        modalMediaRecorder.start(1000); // Collect data every second
 
         // Update UI
         document.getElementById('modal-record-btn').classList.add('hidden');
