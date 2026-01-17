@@ -98,6 +98,39 @@ const STARTER_MEDIA = [
         reflection: null,
         file: null,
         isPreloaded: true
+    },
+    {
+        id: 'starter-5',
+        title: 'Igbo Cultural Symbols (UNN) / Akara Omenala Igbo',
+        type: 'page',
+        link: 'https://igbostudies.unn.edu.ng/wp-content/uploads/sites/56/2025/03/CIS-OLU-IGBO-Article-2-Nkwado-Ebe-Nlereanya-Ihe-Okpu-Odinala-N.docx',
+        notes: 'Document about Igbo cultural symbols / Akwụkwọ gbasara akara omenala Igbo',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-6',
+        title: 'Igbo Language & University Admission (UNN) / Asụsụ Igbo na Agụmakwụkwọ',
+        type: 'pdf',
+        link: 'https://igbostudies.unn.edu.ng/wp-content/uploads/sites/56/2025/07/1-Ime-nke-Oma-nAsusu-Igbo-di-ka-otu-nIme-Ntozu-Maka-Inwete-Ohere-Agumakwukwo-nUlo-Akwukwo-di-Elu-nAla-Igbo.pdf',
+        notes: 'Research on Igbo language proficiency and education / Nnyocha gbasara ịsụ asụsụ Igbo nke ọma',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-7',
+        title: 'Greetings in Igbo Youth Culture (UNN) / Ekele na Ndụ Ndị Ntorobia',
+        type: 'pdf',
+        link: 'https://igbostudies.unn.edu.ng/wp-content/uploads/sites/56/2025/07/1-Atutu-Asusu-nobodo-ninyocha-ekele-na-ndu-ndi-ntorobia-nIgbo.pdf',
+        notes: 'Study on greetings among Igbo youth / Ọmụmụ gbasara ekele n\'etiti ndị ntorobia Igbo',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
     }
 ];
 
@@ -110,6 +143,10 @@ let modalMediaRecorder = null;
 let modalAudioChunks = [];
 let currentModalAudioBlob = null;
 let currentMediaId = null;
+let vocabMediaRecorder = null;
+let vocabAudioChunks = [];
+let currentVocabAudioBlob = null;
+let currentWordId = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -121,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPastRecordings();
     initRecording();
     initMediaLibrary();
+    initVocabulary();
     checkTodayCompletion();
     checkMicPermissionBanner();
     initShuffleButton();
@@ -131,8 +169,8 @@ function initStarterMedia() {
     const media = JSON.parse(localStorage.getItem('media') || '[]');
     const starterVersion = localStorage.getItem('starterMediaVersion') || '0';
 
-    // Version 2: Updated starter media (removed playlist, added PDF)
-    const CURRENT_VERSION = '2';
+    // Version 3: Added UNN research papers
+    const CURRENT_VERSION = '3';
 
     // Remove old starter media if version changed
     if (starterVersion !== CURRENT_VERSION) {
@@ -219,9 +257,22 @@ function initShuffleButton() {
 }
 
 function shufflePrompt() {
-    // Get a random prompt
-    const randomIndex = Math.floor(Math.random() * PROMPTS.length);
-    const newPrompt = PROMPTS[randomIndex];
+    // Get recently used prompts (last 15)
+    const recentPrompts = JSON.parse(localStorage.getItem('recent-prompts') || '[]');
+
+    // Filter out recent prompts to avoid repetition
+    let availablePrompts = PROMPTS.filter(p => !recentPrompts.includes(p));
+
+    // If we've used most prompts (less than 5 available), allow older ones back
+    // by removing the oldest half from the recent list
+    if (availablePrompts.length < 5) {
+        const halfRecent = recentPrompts.slice(Math.floor(recentPrompts.length / 2));
+        availablePrompts = PROMPTS.filter(p => !halfRecent.includes(p));
+    }
+
+    // Get a random prompt from available ones
+    const randomIndex = Math.floor(Math.random() * availablePrompts.length);
+    const newPrompt = availablePrompts[randomIndex];
 
     // Update the display
     document.getElementById('daily-prompt').textContent = newPrompt;
@@ -229,6 +280,13 @@ function shufflePrompt() {
     // Save it so it persists for this session
     const today = new Date().toDateString();
     localStorage.setItem(`prompt-${today}`, newPrompt);
+
+    // Track this prompt as recently used (keep last 15)
+    recentPrompts.push(newPrompt);
+    if (recentPrompts.length > 15) {
+        recentPrompts.shift(); // Remove oldest
+    }
+    localStorage.setItem('recent-prompts', JSON.stringify(recentPrompts));
 }
 
 // Recording
@@ -477,9 +535,13 @@ function renderCalendar() {
         const dayRecordings = recordings.filter(r => r.date === dateString);
         const hasPrompt = dayRecordings.some(r => r.type === 'prompt');
         const hasMedia = dayRecordings.some(r => r.type === 'media');
+        const hasVocab = dayRecordings.some(r => r.type === 'vocabulary');
 
-        if (hasPrompt && hasMedia) {
-            // Both activities - show star
+        // Count how many activity types
+        const activityCount = [hasPrompt, hasMedia, hasVocab].filter(Boolean).length;
+
+        if (activityCount >= 2) {
+            // Multiple activities - show star
             dayEl.innerHTML = `
                 <div class="cal-icon">⭐</div>
                 <div class="cal-date">${day}</div>
@@ -502,6 +564,14 @@ function renderCalendar() {
                 <div class="cal-igbo">${igboDay}</div>
             `;
             dayEl.classList.add('completed', 'media-activity');
+        } else if (hasVocab) {
+            // Only vocabulary - show book/pencil
+            dayEl.innerHTML = `
+                <div class="cal-icon">📝</div>
+                <div class="cal-date">${day}</div>
+                <div class="cal-igbo">${igboDay}</div>
+            `;
+            dayEl.classList.add('completed', 'vocab-activity');
         } else {
             // No activity - show day and market day
             dayEl.innerHTML = `
@@ -937,4 +1007,268 @@ function saveModalReflection() {
     };
 
     reader.readAsDataURL(currentModalAudioBlob);
+}
+
+// Vocabulary Management
+function initVocabulary() {
+    const addWordBtn = document.getElementById('add-word-btn');
+    const cancelWordBtn = document.getElementById('cancel-word-btn');
+    const wordForm = document.getElementById('word-form');
+    const vocabCloseBtn = document.getElementById('vocab-close-btn');
+    const vocabRecordBtn = document.getElementById('vocab-record-btn');
+    const vocabStopBtn = document.getElementById('vocab-stop-btn');
+    const vocabRerecordBtn = document.getElementById('vocab-rerecord-btn');
+    const vocabSaveBtn = document.getElementById('vocab-save-btn');
+
+    addWordBtn.addEventListener('click', () => {
+        document.getElementById('add-word-form').classList.remove('hidden');
+    });
+
+    cancelWordBtn.addEventListener('click', () => {
+        document.getElementById('add-word-form').classList.add('hidden');
+        wordForm.reset();
+    });
+
+    wordForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        addWord();
+    });
+
+    vocabCloseBtn.addEventListener('click', closeVocabModal);
+    vocabRecordBtn.addEventListener('click', startVocabRecording);
+    vocabStopBtn.addEventListener('click', stopVocabRecording);
+    vocabRerecordBtn.addEventListener('click', reRecordVocab);
+    vocabSaveBtn.addEventListener('click', saveVocabPractice);
+
+    loadWordsList();
+}
+
+function addWord() {
+    const igboWord = document.getElementById('word-igbo').value;
+    const englishMeaning = document.getElementById('word-english').value;
+    const notes = document.getElementById('word-notes').value;
+
+    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+
+    const newWord = {
+        id: Date.now(),
+        igboWord,
+        englishMeaning,
+        notes,
+        practices: [] // Array of practice recordings with dates
+    };
+
+    words.push(newWord);
+    localStorage.setItem('vocabulary-words', JSON.stringify(words));
+
+    document.getElementById('add-word-form').classList.add('hidden');
+    document.getElementById('word-form').reset();
+    loadWordsList();
+}
+
+function loadWordsList() {
+    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+    const list = document.getElementById('words-list');
+
+    if (words.length === 0) {
+        list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">No words added yet / Enwebeghị okwu agbakwunyere</p>';
+        return;
+    }
+
+    // Sort by most recent first
+    words.sort((a, b) => b.id - a.id);
+
+    list.innerHTML = words.map(word => `
+        <div class="media-item">
+            <div class="media-header">
+                <div>
+                    <div class="media-title">
+                        <strong>${word.igboWord}</strong> = ${word.englishMeaning}
+                    </div>
+                </div>
+                <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteWord(${word.id})">Delete / Hichapụ</button>
+            </div>
+            ${word.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d; margin-top: 8px;">${word.notes}</div>` : ''}
+            <div style="margin-top: 12px;">
+                <strong style="font-size: 14px;">Practice Count / Ọnụ Ọgụgụ Omume: ${word.practices.length}</strong>
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="openVocabModal(${word.id}, '${word.igboWord.replace(/'/g, "\\'")}', '${word.englishMeaning.replace(/'/g, "\\'")}')">
+                🎤 Practice in 5 Sentences / Mee Omume na Ahịrịokwu 5
+            </button>
+            ${word.practices.length > 0 ? `
+                <div class="media-reflection" style="margin-top: 12px;">
+                    <p><strong>Recent Practices / Omume Ndị Gara Aga:</strong></p>
+                    ${word.practices.slice(0, 3).map(practice => `
+                        <div style="margin-bottom: 8px;">
+                            <div style="font-size: 12px; color: #6c757d; margin-bottom: 4px;">
+                                ${new Date(practice.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                            <audio controls src="${practice.audio}" style="width: 100%;"></audio>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+function deleteWord(id) {
+    if (!confirm('Are you sure you want to delete this word? / Ị ji n\'aka na ị chọrọ ihichapụ okwu a?')) {
+        return;
+    }
+
+    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+    const updatedWords = words.filter(w => w.id !== id);
+    localStorage.setItem('vocabulary-words', JSON.stringify(updatedWords));
+    loadWordsList();
+
+    // Refresh calendar in case this affected streaks
+    loadStats();
+    renderCalendar();
+}
+
+function openVocabModal(wordId, igboWord, englishMeaning) {
+    currentWordId = wordId;
+    document.getElementById('vocab-word-display').textContent = igboWord;
+    document.getElementById('vocab-meaning-display').textContent = englishMeaning;
+    document.getElementById('vocab-modal').classList.remove('hidden');
+
+    // Reset modal recording state
+    document.getElementById('vocab-record-btn').classList.remove('hidden');
+    document.getElementById('vocab-recording-status').classList.add('hidden');
+    document.getElementById('vocab-playback').classList.add('hidden');
+    currentVocabAudioBlob = null;
+}
+
+function closeVocabModal() {
+    document.getElementById('vocab-modal').classList.add('hidden');
+    currentWordId = null;
+    currentVocabAudioBlob = null;
+}
+
+async function startVocabRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
+
+        vocabMediaRecorder = new MediaRecorder(stream);
+        vocabAudioChunks = [];
+
+        vocabMediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+                vocabAudioChunks.push(event.data);
+            }
+        };
+
+        vocabMediaRecorder.onstop = () => {
+            const audioBlob = new Blob(vocabAudioChunks, { type: vocabMediaRecorder.mimeType });
+            currentVocabAudioBlob = audioBlob;
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            const audioPlayer = document.getElementById('vocab-audio-player');
+            audioPlayer.src = audioUrl;
+            audioPlayer.load();
+
+            // Show playback section
+            document.getElementById('vocab-record-btn').classList.add('hidden');
+            document.getElementById('vocab-playback').classList.remove('hidden');
+
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        vocabMediaRecorder.start(1000);
+
+        // Update UI
+        document.getElementById('vocab-record-btn').classList.add('hidden');
+        document.getElementById('vocab-recording-status').classList.remove('hidden');
+
+        // Auto-stop after 3 minutes
+        setTimeout(() => {
+            if (vocabMediaRecorder && vocabMediaRecorder.state === 'recording') {
+                vocabMediaRecorder.stop();
+                document.getElementById('vocab-recording-status').classList.add('hidden');
+            }
+        }, 180000);
+
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+
+        if (error.name === 'NotAllowedError') {
+            alert('Microphone access was denied. Please:\n\n1. Tap the "AA" or settings icon in Safari\n2. Select "Website Settings"\n3. Set Microphone to "Allow"\n4. Reload the page and try again');
+        } else {
+            alert('Could not access microphone. Please check your device settings and try again.');
+        }
+    }
+}
+
+function stopVocabRecording() {
+    if (vocabMediaRecorder && vocabMediaRecorder.state === 'recording') {
+        vocabMediaRecorder.stop();
+        document.getElementById('vocab-recording-status').classList.add('hidden');
+    }
+}
+
+function reRecordVocab() {
+    document.getElementById('vocab-playback').classList.add('hidden');
+    document.getElementById('vocab-record-btn').classList.remove('hidden');
+    currentVocabAudioBlob = null;
+}
+
+function saveVocabPractice() {
+    if (!currentVocabAudioBlob || !currentWordId) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const base64Audio = reader.result;
+        const today = new Date().toDateString();
+
+        const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+        const word = words.find(w => w.id === currentWordId);
+
+        if (word) {
+            // Add practice to word
+            word.practices.unshift({
+                date: today,
+                timestamp: new Date().toISOString(),
+                audio: base64Audio
+            });
+
+            localStorage.setItem('vocabulary-words', JSON.stringify(words));
+
+            // Track as vocabulary activity for streak
+            const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+
+            // Check if we already tracked vocabulary practice today
+            const alreadyTrackedToday = recordings.some(r =>
+                r.date === today && r.type === 'vocabulary'
+            );
+
+            if (!alreadyTrackedToday) {
+                recordings.push({
+                    date: today,
+                    timestamp: new Date().toISOString(),
+                    type: 'vocabulary',
+                    wordId: word.id,
+                    word: word.igboWord,
+                    audio: base64Audio
+                });
+                localStorage.setItem('recordings', JSON.stringify(recordings));
+
+                // Update stats and calendar
+                loadStats();
+                renderCalendar();
+            }
+
+            closeVocabModal();
+            loadWordsList();
+        }
+    };
+
+    reader.readAsDataURL(currentVocabAudioBlob);
 }

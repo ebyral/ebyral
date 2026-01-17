@@ -367,6 +367,11 @@ body {
     color: #c2185b;
 }
 
+.calendar-day.vocab-activity {
+    background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+    color: #00695c;
+}
+
 .calendar-day.today {
     box-shadow: 0 0 0 2px #667eea inset;
     font-weight: 800;

@@ -12,6 +12,7 @@
         <nav class="nav">
             <button class="nav-btn active" data-screen="practice">Practice / Omume</button>
             <button class="nav-btn" data-screen="library">Library / Ọba Akwụkwọ</button>
+            <button class="nav-btn" data-screen="vocabulary">Words / Okwu</button>
         </nav>
 
         <!-- Practice Screen -->
@@ -184,6 +185,74 @@
                         </div>
                     </div>
                     <button id="modal-close-btn" class="btn btn-secondary">Close / Mechie</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vocabulary Screen -->
+        <div id="vocabulary-screen" class="screen">
+            <div class="header">
+                <h1>Vocabulary Practice / Okwu Ọhụrụ</h1>
+                <button id="add-word-btn" class="btn btn-primary">+ Add Word / Tinye Okwu</button>
+            </div>
+
+            <!-- Add Word Form -->
+            <div id="add-word-form" class="form-card hidden">
+                <h3>Add New Word / Tinye Okwu Ọhụrụ</h3>
+                <form id="word-form">
+                    <div class="form-group">
+                        <label for="word-igbo">Igbo Word / Okwu Igbo</label>
+                        <input type="text" id="word-igbo" required placeholder="e.g., mmadụ">
+                    </div>
+                    <div class="form-group">
+                        <label for="word-english">English Meaning / Nkọwa Bekee</label>
+                        <input type="text" id="word-english" required placeholder="e.g., person">
+                    </div>
+                    <div class="form-group">
+                        <label for="word-notes">Notes (optional) / Ndetu (Nhọrọ)</label>
+                        <textarea id="word-notes" rows="2" placeholder="Any additional notes... / Ndetu ọzọ ọ bụla..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">Save Word / Chekwaa Okwu</button>
+                        <button type="button" id="cancel-word-btn" class="btn btn-secondary">Cancel / Kagbuo</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Words List -->
+            <div id="words-list" class="media-list"></div>
+
+            <!-- Vocabulary Recording Modal -->
+            <div id="vocab-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>Practice Using This Word / Jiri Okwu A Mee Ihe</h3>
+                    <p class="modal-subtitle">
+                        <strong id="vocab-word-display"></strong> = <span id="vocab-meaning-display"></span>
+                    </p>
+                    <p style="margin-bottom: 20px; color: #6c757d;">
+                        Record yourself using this word in 5 sentences / Dekọọ onwe gị jiri okwu a mee ahịrịokwu 5
+                    </p>
+                    <div class="modal-recording">
+                        <button id="vocab-record-btn" class="btn btn-primary">
+                            <span class="btn-icon">🎤</span>
+                            Start Recording / Malite Ndekọ
+                        </button>
+                        <div id="vocab-recording-status" class="recording-status hidden">
+                            <div class="recording-status-text">
+                                <span class="recording-indicator"></span>
+                                Recording... / Na-edekọ...
+                            </div>
+                            <button id="vocab-stop-btn" class="btn btn-danger">Stop / Kwụsị</button>
+                        </div>
+                        <div id="vocab-playback" class="hidden">
+                            <audio id="vocab-audio-player" controls></audio>
+                            <div class="playback-controls">
+                                <button id="vocab-rerecord-btn" class="btn btn-secondary">Re-record / Dekọọkwa</button>
+                                <button id="vocab-save-btn" class="btn btn-success">Save Practice / Chekwaa Omume</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="vocab-close-btn" class="btn btn-secondary">Close / Mechie</button>
                 </div>
             </div>
         </div>
