@@ -68,6 +68,28 @@ const STARTER_MEDIA = [
     },
     {
         id: 'starter-2',
+        title: 'Omenuko (Full Audiobook) / Omenuko (Akwụkwọ Ọdịyo Zuru Ezu)',
+        type: 'audiobook',
+        link: 'https://www.youtube.com/watch?v=LgFCWSOl3iw',
+        notes: 'Classic Igbo literature audiobook / Akwụkwọ ọdịnala Igbo',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-3',
+        title: 'Udochukwu (Igbo Movie) / Udochukwu (Ihe Nkili Igbo)',
+        type: 'movie',
+        link: 'https://www.youtube.com/watch?v=Fe9E1kVTul8',
+        notes: 'Popular Igbo movie / Ihe nkili Igbo a ma ama',
+        status: 'not-started',
+        reflection: null,
+        file: null,
+        isPreloaded: true
+    },
+    {
+        id: 'starter-4',
         title: 'ABS Akụkọ Ụwa (Igbo News) / Akụkọ Ụwa Igbo',
         type: 'page',
         link: 'https://www.youtube.com/watch?v=EI7umg0WH4Q&list=PLLnE8CV3IUR8HgVzKduK1isUk2-2R1Z86',
@@ -154,13 +176,6 @@ function switchScreen(screen) {
     document.querySelectorAll('.screen').forEach(s => {
         s.classList.toggle('active', s.id === `${screen}-screen`);
     });
-}
-
-function scrollToPrompt() {
-    const promptCard = document.querySelector('.prompt-card');
-    if (promptCard) {
-        promptCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
 }
 
 // Daily Prompt

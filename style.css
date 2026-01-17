@@ -66,49 +66,6 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Practice Options */
-.practice-options {
-    margin-bottom: 20px;
-}
-
-.options-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.option-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.option-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
-}
-
-.option-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-}
-
-.option-card h3 {
-    font-size: 16px;
-    margin-bottom: 8px;
-    color: #667eea;
-}
-
-.option-description {
-    font-size: 13px;
-    color: #6c757d;
-    margin-bottom: 16px;
-    line-height: 1.4;
-}
-
 .header h1 {
     font-size: 28px;
     margin-bottom: 16px;
@@ -793,27 +750,6 @@ body {
 
     .media-embed.pdf-embed iframe {
         height: 300px;
-    }
-
-    .options-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .option-card {
-        padding: 16px;
-    }
-
-    .option-icon {
-        font-size: 36px;
-    }
-
-    .option-card h3 {
-        font-size: 14px;
-    }
-
-    .option-description {
-        font-size: 12px;
     }
 }
 
