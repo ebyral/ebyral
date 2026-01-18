@@ -476,9 +476,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await renderCalendar();
         await loadPastRecordings();
         initRecording();
-        initMediaLibrary();
-        initVocabulary();
-        initWriting();
+        await initMediaLibrary();
+        await initVocabulary();
+        await initWriting();
         await checkTodayCompletion();
         await checkMicPermissionBanner();
         initShuffleButton();
@@ -1067,7 +1067,7 @@ async function deleteRecording(timestamp) {
 window.deleteRecording = deleteRecording;
 
 // Media Library
-function initMediaLibrary() {
+async function initMediaLibrary() {
     const addMediaBtn = document.getElementById('add-media-btn');
     const cancelMediaBtn = document.getElementById('cancel-media-btn');
     const mediaForm = document.getElementById('media-form');
@@ -1121,7 +1121,7 @@ function initMediaLibrary() {
         }
     });
 
-    loadMediaList();
+    await loadMediaList();
 }
 
 async function addMedia() {
@@ -1538,7 +1538,7 @@ async function saveModalReflection() {
 }
 
 // Vocabulary Management
-function initVocabulary() {
+async function initVocabulary() {
     const addWordBtn = document.getElementById('add-word-btn');
     const cancelWordBtn = document.getElementById('cancel-word-btn');
     const wordForm = document.getElementById('word-form');
@@ -1568,7 +1568,7 @@ function initVocabulary() {
     if (vocabRerecordBtn) vocabRerecordBtn.addEventListener('click', reRecordVocab);
     if (vocabSaveBtn) vocabSaveBtn.addEventListener('click', saveVocabPractice);
 
-    loadWordsList();
+    await loadWordsList();
 }
 
 async function addWord() {
