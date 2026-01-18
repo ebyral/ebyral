@@ -211,7 +211,8 @@ body {
 }
 
 .recording-status #stop-btn,
-.recording-status #modal-stop-btn {
+.recording-status #modal-stop-btn,
+.recording-status #vocab-stop-btn {
     width: 100%;
 }
 
@@ -370,6 +371,11 @@ body {
 .calendar-day.vocab-activity {
     background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
     color: #00695c;
+}
+
+.calendar-day.writing-activity {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: #e65100;
 }
 
 .calendar-day.today {

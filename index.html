@@ -11,6 +11,7 @@
         <!-- Navigation -->
         <nav class="nav">
             <button class="nav-btn active" data-screen="practice">Practice / Omume</button>
+            <button class="nav-btn" data-screen="writing">Writing / Ide</button>
             <button class="nav-btn" data-screen="library">Library / Ọba Akwụkwọ</button>
             <button class="nav-btn" data-screen="vocabulary">Words / Okwu</button>
         </nav>
@@ -102,6 +103,69 @@
             <div class="past-recordings-section">
                 <h3>Past Recordings / Ndekọ Ndị Gara Aga</h3>
                 <div id="past-recordings-list" class="recordings-list"></div>
+            </div>
+        </div>
+
+        <!-- Writing Screen -->
+        <div id="writing-screen" class="screen">
+            <div class="header">
+                <h1>Writing / Ide</h1>
+                <div class="streak-info">
+                    <div class="streak-item">
+                        <span class="streak-label">Writing Streak / Usoro Ide</span>
+                        <span class="streak-value" id="writing-streak">0</span>
+                    </div>
+                    <div class="streak-item">
+                        <span class="streak-label">Total / Ngụkọta</span>
+                        <span class="streak-value" id="total-writings">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Writing Prompt -->
+            <div class="prompt-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2 style="margin: 0;">Today's Reflection / Ntụgharị Uche Taa</h2>
+                    <button id="shuffle-writing-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                        🔀 Shuffle / Gbanwee
+                    </button>
+                </div>
+                <p class="prompt-text" id="writing-prompt">Loading... / Na-ebudata...</p>
+            </div>
+
+            <!-- Writing Section -->
+            <div class="recording-section">
+                <div id="writing-controls">
+                    <div class="form-group">
+                        <label for="writing-textarea" style="font-size: 16px; font-weight: 600; margin-bottom: 8px; display: block;">
+                            Write your thoughts in Igbo / Dee echiche gị n'asụsụ Igbo
+                        </label>
+                        <textarea id="writing-textarea" rows="10" placeholder="Start writing... / Malite ide..." style="width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; font-family: inherit; resize: vertical;"></textarea>
+                        <div style="margin-top: 8px; color: #6c757d; font-size: 14px;">
+                            Word count / Ọnụ ọgụgụ okwu: <strong id="word-count">0</strong>
+                        </div>
+                    </div>
+                    <button id="save-writing-btn" class="btn btn-success" style="width: 100%; margin-top: 12px;">
+                        Save Writing / Chekwaa Ide
+                    </button>
+                </div>
+
+                <!-- Completion Message -->
+                <div id="writing-completion-message" class="hidden">
+                    <div class="completion-card">
+                        <span class="completion-icon">✓</span>
+                        <p>Great work! You've completed today's writing.<br>Ọrụ magburu onwe ya! I mezuola ide taa.</p>
+                        <button id="new-writing-btn" class="btn btn-primary" style="margin-top: 12px;">
+                            Write More / Dee Ọzọ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past Writings -->
+            <div class="past-recordings-section">
+                <h3>Past Writings / Ide Ndị Gara Aga</h3>
+                <div id="past-writings-list" class="recordings-list"></div>
             </div>
         </div>
 

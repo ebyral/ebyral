@@ -53,6 +53,40 @@ const PROMPTS = [
     "Talk about nature around you / Kwuo maka ọdịdị ala gbulugubu gị"
 ];
 
+// Writing Prompts - Deeper reflection prompts for journaling
+const WRITING_PROMPTS = [
+    "What am I learning about myself? / Gịnị ka m na-amụta gbasara onwe m?",
+    "A memory from this week / Ncheta site n'izu a",
+    "Something I'm grateful for today / Ihe m nwere ekele maka ya taata",
+    "My hopes for tomorrow / Olileanya m maka echi",
+    "How I'm feeling right now / Otụ m dị ugbu a",
+    "What challenged me today? / Gịnị kpara m ihe ịma aka taata?",
+    "A person who inspires me / Onye na-akpali m mmụọ",
+    "What I want to remember about today / Ihe m chọrọ icheta gbasara taata",
+    "My biggest fear and why / Egwu m kasị ukwuu na ihe kpatara ya",
+    "What makes me happy? / Gịnị na-eme m obi ụtọ?",
+    "A lesson I learned recently / Ihe mmụta m mụtara n'oge na-adịbeghị anya",
+    "My dreams for the future / Nrọ m maka ọdịnihu",
+    "What I'm proud of / Ihe m na-anya isi maka ya",
+    "A difficult conversation I had / Mkparịta ụka siri ike m nwere",
+    "How I've grown this year / Otụ m tolitere n'afọ a",
+    "What I need to let go of / Ihe m kwesịrị ịhapụ",
+    "My relationship with my family / Mmekọrịta m na ezinụlọ m",
+    "What success means to me / Ihe ịga nke ọma pụtara n'ebe m nọ",
+    "A mistake I made and what I learned / Njehie m mere na ihe m mụtara",
+    "What I value most in life / Ihe m kpọrọ ihe n'ihu kalịa na ndụ",
+    "My favorite childhood memory / Ncheta ọma m kasị mma mgbe m bụ nwata",
+    "What I wish people knew about me / Ihe m chọrọ ka ndị mmadụ mara gbasara m",
+    "How I handle stress / Otụ m si edozi nchegbu",
+    "What I'm avoiding and why / Ihe m na-ezere na ihe kpatara ya",
+    "A goal I'm working towards / Ebumnobi m na-arụ ọrụ maka ya",
+    "What friendship means to me / Ihe ọbụbụenyi pụtara m",
+    "My morning routine and how it affects my day / Usoro ụtụtụ m na otụ ọ si emetụta ụbọchị m",
+    "What I would tell my younger self / Ihe m ga-agwa onwe m mgbe m dị obere",
+    "A place that feels like home / Ebe nke dị ka ụlọ m",
+    "What I'm reading or learning / Ihe m na-agụ ma ọ bụ na-amụ"
+];
+
 // Starter Media Library - Pre-loaded content for all users
 const STARTER_MEDIA = [
     {
@@ -214,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRecording();
     initMediaLibrary();
     initVocabulary();
+    initWriting();
     checkTodayCompletion();
     checkMicPermissionBanner();
     initShuffleButton();
@@ -351,10 +386,10 @@ function initRecording() {
     const rerecordBtn = document.getElementById('rerecord-btn');
     const saveBtn = document.getElementById('save-btn');
 
-    recordBtn.addEventListener('click', startRecording);
-    stopBtn.addEventListener('click', stopRecording);
-    rerecordBtn.addEventListener('click', reRecord);
-    saveBtn.addEventListener('click', saveRecording);
+    if (recordBtn) recordBtn.addEventListener('click', startRecording);
+    if (stopBtn) stopBtn.addEventListener('click', stopRecording);
+    if (rerecordBtn) rerecordBtn.addEventListener('click', reRecord);
+    if (saveBtn) saveBtn.addEventListener('click', saveRecording);
 }
 
 async function startRecording() {
@@ -538,6 +573,7 @@ function renderCalendar() {
     calendar.innerHTML = '';
 
     const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
     const recordingDates = new Set(recordings.map(r => r.date));
 
     // Get current month
@@ -588,12 +624,14 @@ function renderCalendar() {
 
         // Check what activities happened on this day
         const dayRecordings = recordings.filter(r => r.date === dateString);
+        const dayWritings = writings.filter(w => w.date === dateString);
         const hasPrompt = dayRecordings.some(r => r.type === 'prompt');
         const hasMedia = dayRecordings.some(r => r.type === 'media');
         const hasVocab = dayRecordings.some(r => r.type === 'vocabulary');
+        const hasWriting = dayWritings.length > 0;
 
         // Count how many activity types
-        const activityCount = [hasPrompt, hasMedia, hasVocab].filter(Boolean).length;
+        const activityCount = [hasPrompt, hasMedia, hasVocab, hasWriting].filter(Boolean).length;
 
         if (activityCount >= 2) {
             // Multiple activities - show star
@@ -627,6 +665,14 @@ function renderCalendar() {
                 <div class="cal-igbo">${igboDay}</div>
             `;
             dayEl.classList.add('completed', 'vocab-activity');
+        } else if (hasWriting) {
+            // Only writing - show writing hand
+            dayEl.innerHTML = `
+                <div class="cal-icon">✍️</div>
+                <div class="cal-date">${day}</div>
+                <div class="cal-igbo">${igboDay}</div>
+            `;
+            dayEl.classList.add('completed', 'writing-activity');
         } else {
             // No activity - show day and market day
             dayEl.innerHTML = `
@@ -716,11 +762,11 @@ function initMediaLibrary() {
         addMedia();
     });
 
-    modalCloseBtn.addEventListener('click', closeReflectionModal);
-    modalRecordBtn.addEventListener('click', startModalRecording);
-    modalStopBtn.addEventListener('click', stopModalRecording);
-    modalRerecordBtn.addEventListener('click', reRecordModal);
-    modalSaveBtn.addEventListener('click', saveModalReflection);
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeReflectionModal);
+    if (modalRecordBtn) modalRecordBtn.addEventListener('click', startModalRecording);
+    if (modalStopBtn) modalStopBtn.addEventListener('click', stopModalRecording);
+    if (modalRerecordBtn) modalRerecordBtn.addEventListener('click', reRecordModal);
+    if (modalSaveBtn) modalSaveBtn.addEventListener('click', saveModalReflection);
 
     loadMediaList();
 }
@@ -1117,11 +1163,11 @@ function initVocabulary() {
         addWord();
     });
 
-    vocabCloseBtn.addEventListener('click', closeVocabModal);
-    vocabRecordBtn.addEventListener('click', startVocabRecording);
-    vocabStopBtn.addEventListener('click', stopVocabRecording);
-    vocabRerecordBtn.addEventListener('click', reRecordVocab);
-    vocabSaveBtn.addEventListener('click', saveVocabPractice);
+    if (vocabCloseBtn) vocabCloseBtn.addEventListener('click', closeVocabModal);
+    if (vocabRecordBtn) vocabRecordBtn.addEventListener('click', startVocabRecording);
+    if (vocabStopBtn) vocabStopBtn.addEventListener('click', stopVocabRecording);
+    if (vocabRerecordBtn) vocabRerecordBtn.addEventListener('click', reRecordVocab);
+    if (vocabSaveBtn) vocabSaveBtn.addEventListener('click', saveVocabPractice);
 
     loadWordsList();
 }
@@ -1357,4 +1403,202 @@ function saveVocabPractice() {
     };
 
     reader.readAsDataURL(currentVocabAudioBlob);
+}
+
+// Writing Management
+function initWriting() {
+    const shuffleWritingBtn = document.getElementById('shuffle-writing-btn');
+    const saveWritingBtn = document.getElementById('save-writing-btn');
+    const newWritingBtn = document.getElementById('new-writing-btn');
+    const writingTextarea = document.getElementById('writing-textarea');
+
+    loadWritingPrompt();
+    loadWritingStats();
+    loadPastWritings();
+    checkTodayWriting();
+
+    shuffleWritingBtn.addEventListener('click', shuffleWritingPrompt);
+    saveWritingBtn.addEventListener('click', saveWriting);
+    newWritingBtn.addEventListener('click', startNewWriting);
+
+    // Update word count as user types
+    writingTextarea.addEventListener('input', updateWordCount);
+}
+
+function loadWritingPrompt() {
+    const today = new Date().toDateString();
+    const savedPrompt = localStorage.getItem(`writing-prompt-${today}`);
+
+    let prompt;
+    if (savedPrompt) {
+        prompt = savedPrompt;
+    } else {
+        // Generate random writing prompt for today
+        const randomIndex = Math.floor(Math.random() * WRITING_PROMPTS.length);
+        prompt = WRITING_PROMPTS[randomIndex];
+        localStorage.setItem(`writing-prompt-${today}`, prompt);
+    }
+
+    document.getElementById('writing-prompt').textContent = prompt;
+}
+
+function shuffleWritingPrompt() {
+    // Get recently used writing prompts (last 15)
+    const recentPrompts = JSON.parse(localStorage.getItem('recent-writing-prompts') || '[]');
+
+    // Filter out recent prompts to avoid repetition
+    let availablePrompts = WRITING_PROMPTS.filter(p => !recentPrompts.includes(p));
+
+    // If we've used most prompts (less than 5 available), allow older ones back
+    if (availablePrompts.length < 5) {
+        const halfRecent = recentPrompts.slice(Math.floor(recentPrompts.length / 2));
+        availablePrompts = WRITING_PROMPTS.filter(p => !halfRecent.includes(p));
+    }
+
+    // Get a random prompt from available ones
+    const randomIndex = Math.floor(Math.random() * availablePrompts.length);
+    const newPrompt = availablePrompts[randomIndex];
+
+    // Update the display
+    document.getElementById('writing-prompt').textContent = newPrompt;
+
+    // Save it so it persists for this session
+    const today = new Date().toDateString();
+    localStorage.setItem(`writing-prompt-${today}`, newPrompt);
+
+    // Track this prompt as recently used (keep last 15)
+    recentPrompts.push(newPrompt);
+    if (recentPrompts.length > 15) {
+        recentPrompts.shift(); // Remove oldest
+    }
+    localStorage.setItem('recent-writing-prompts', JSON.stringify(recentPrompts));
+}
+
+function updateWordCount() {
+    const textarea = document.getElementById('writing-textarea');
+    const text = textarea.value.trim();
+    const words = text.split(/\s+/).filter(word => word.length > 0);
+    document.getElementById('word-count').textContent = words.length;
+}
+
+function saveWriting() {
+    const textarea = document.getElementById('writing-textarea');
+    const text = textarea.value.trim();
+
+    if (!text) {
+        alert('Please write something before saving. / Biko dee ihe tupu ịchekwa.');
+        return;
+    }
+
+    const today = new Date().toDateString();
+    const prompt = document.getElementById('writing-prompt').textContent;
+
+    // Get existing writings
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+
+    // Add new writing with activity type
+    writings.push({
+        date: today,
+        timestamp: new Date().toISOString(),
+        prompt: prompt,
+        text: text,
+        type: 'writing',
+        wordCount: text.split(/\s+/).filter(word => word.length > 0).length
+    });
+
+    localStorage.setItem('writings', JSON.stringify(writings));
+
+    // Update UI
+    document.getElementById('writing-controls').classList.add('hidden');
+    document.getElementById('writing-completion-message').classList.remove('hidden');
+    textarea.value = '';
+    updateWordCount();
+
+    // Update stats
+    loadWritingStats();
+    loadStats(); // Update main stats
+    renderCalendar();
+    loadPastWritings();
+}
+
+function startNewWriting() {
+    document.getElementById('writing-controls').classList.remove('hidden');
+    document.getElementById('writing-completion-message').classList.add('hidden');
+}
+
+function checkTodayWriting() {
+    const today = new Date().toDateString();
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+    const todayWriting = writings.find(w => w.date === today);
+
+    if (todayWriting) {
+        document.getElementById('writing-controls').classList.add('hidden');
+        document.getElementById('writing-completion-message').classList.remove('hidden');
+    }
+}
+
+function loadWritingStats() {
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+
+    // Total writings
+    document.getElementById('total-writings').textContent = writings.length;
+
+    // Calculate writing streak
+    const streak = calculateStreak(writings);
+    document.getElementById('writing-streak').textContent = streak;
+}
+
+function loadPastWritings() {
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+    const list = document.getElementById('past-writings-list');
+
+    if (writings.length === 0) {
+        list.innerHTML = '<p style="color: #6c757d; text-align: center;">No writings yet / Enweghị ide ọ bụla</p>';
+        return;
+    }
+
+    // Sort by most recent first
+    writings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    list.innerHTML = writings.map((writing) => `
+        <div class="recording-item">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <div>
+                    <span class="recording-date">${new Date(writing.timestamp).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}</span>
+                    <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+                        ${writing.wordCount} words / okwu
+                    </div>
+                </div>
+                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteWriting('${writing.timestamp}')">
+                    Delete / Hichapụ
+                </button>
+            </div>
+            <div class="recording-prompt" style="margin-bottom: 8px;">${writing.prompt}</div>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; white-space: pre-wrap; font-size: 14px; color: #333; max-height: 300px; overflow-y: auto;">
+                ${writing.text}
+            </div>
+        </div>
+    `).join('');
+}
+
+function deleteWriting(timestamp) {
+    if (!confirm('Are you sure you want to delete this writing? / Ị ji n\'aka na ị chọrọ ihichapụ ide a?')) {
+        return;
+    }
+
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+    const updatedWritings = writings.filter(w => w.timestamp !== timestamp);
+    localStorage.setItem('writings', JSON.stringify(updatedWritings));
+
+    // Refresh displays
+    loadPastWritings();
+    loadWritingStats();
+    loadStats();
+    renderCalendar();
+    checkTodayWriting();
 }
