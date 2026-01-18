@@ -1,3 +1,227 @@
+// IndexedDB Setup - Provides 50-500MB storage instead of 5-10MB
+const DB_NAME = 'IgboPracticeDB';
+const DB_VERSION = 1;
+let db = null;
+
+// Initialize IndexedDB
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+
+            // Create object stores if they don't exist
+            if (!db.objectStoreNames.contains('recordings')) {
+                db.createObjectStore('recordings', { keyPath: 'timestamp' });
+            }
+            if (!db.objectStoreNames.contains('writings')) {
+                db.createObjectStore('writings', { keyPath: 'timestamp' });
+            }
+            if (!db.objectStoreNames.contains('vocabulary')) {
+                db.createObjectStore('vocabulary', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('media')) {
+                db.createObjectStore('media', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('settings')) {
+                db.createObjectStore('settings', { keyPath: 'key' });
+            }
+        };
+    });
+}
+
+// Generic IndexedDB operations
+async function dbGet(storeName, key) {
+    if (!db) await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = key ? store.get(key) : store.getAll();
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function dbGetAll(storeName) {
+    if (!db) await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function dbPut(storeName, data) {
+    if (!db) await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.put(data);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function dbPutAll(storeName, dataArray) {
+    if (!db) await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+
+        // Clear existing data
+        store.clear();
+
+        // Add all items
+        dataArray.forEach(item => store.put(item));
+
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
+}
+
+async function dbDelete(storeName, key) {
+    if (!db) await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.delete(key);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// Settings helpers
+async function getSetting(key, defaultValue = null) {
+    const setting = await dbGet('settings', key);
+    return setting ? setting.value : defaultValue;
+}
+
+async function setSetting(key, value) {
+    await dbPut('settings', { key, value });
+}
+
+// LocalStorage-compatible wrappers for easy migration
+async function getStorageItem(key) {
+    // Check if it's a setting or data
+    if (key.includes('-prompt') || key.includes('Version') || key.includes('dismissed')) {
+        return await getSetting(key);
+    }
+
+    // Map localStorage keys to IndexedDB stores
+    const storeMap = {
+        'recordings': 'recordings',
+        'writings': 'writings',
+        'vocabulary-words': 'vocabulary',
+        'media': 'media'
+    };
+
+    const storeName = storeMap[key];
+    if (storeName) {
+        const data = await dbGetAll(storeName);
+        return JSON.stringify(data);
+    }
+
+    // For other keys, treat as settings
+    return await getSetting(key);
+}
+
+async function setStorageItem(key, value) {
+    // Check if it's a setting or data
+    if (key.includes('-prompt') || key.includes('Version') || key.includes('dismissed')) {
+        await setSetting(key, value);
+        return;
+    }
+
+    // Map localStorage keys to IndexedDB stores
+    const storeMap = {
+        'recordings': 'recordings',
+        'writings': 'writings',
+        'vocabulary-words': 'vocabulary',
+        'media': 'media'
+    };
+
+    const storeName = storeMap[key];
+    if (storeName) {
+        const data = JSON.parse(value);
+        await dbPutAll(storeName, data);
+        return;
+    }
+
+    // For other keys, treat as settings
+    await setSetting(key, value);
+}
+
+// Migrate data from localStorage to IndexedDB
+async function migrateFromLocalStorage() {
+    try {
+        const migrated = await getSetting('migrated-from-localstorage');
+        if (migrated) return; // Already migrated
+
+        console.log('Migrating data from localStorage to IndexedDB...');
+
+        // Migrate recordings
+        const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+        if (recordings.length > 0) {
+            await dbPutAll('recordings', recordings);
+            console.log(`Migrated ${recordings.length} recordings`);
+        }
+
+        // Migrate writings
+        const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+        if (writings.length > 0) {
+            await dbPutAll('writings', writings);
+            console.log(`Migrated ${writings.length} writings`);
+        }
+
+        // Migrate vocabulary
+        const vocabulary = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+        if (vocabulary.length > 0) {
+            await dbPutAll('vocabulary', vocabulary);
+            console.log(`Migrated ${vocabulary.length} vocabulary words`);
+        }
+
+        // Migrate media
+        const media = JSON.parse(localStorage.getItem('media') || '[]');
+        if (media.length > 0) {
+            await dbPutAll('media', media);
+            console.log(`Migrated ${media.length} media items`);
+        }
+
+        // Migrate settings
+        const settings = [
+            { key: 'starterMediaVersion', value: localStorage.getItem('starterMediaVersion') || '0' },
+            { key: 'recent-prompts', value: JSON.parse(localStorage.getItem('recent-prompts') || '[]') },
+            { key: 'recent-writing-prompts', value: JSON.parse(localStorage.getItem('recent-writing-prompts') || '[]') },
+            { key: 'mic-banner-dismissed', value: localStorage.getItem('mic-banner-dismissed') === 'true' }
+        ];
+        for (const setting of settings) {
+            await setSetting(setting.key, setting.value);
+        }
+
+        // Mark as migrated
+        await setSetting('migrated-from-localstorage', true);
+        console.log('Migration complete!');
+
+        // Optionally clear localStorage to free up space
+        // localStorage.clear();
+    } catch (error) {
+        console.error('Error migrating from localStorage:', error);
+    }
+}
+
 // Prompts list - Bilingual (English / Anambra Igbo)
 // User can shuffle and answer multiple prompts per day
 const PROMPTS = [
@@ -238,21 +462,33 @@ let currentVocabAudioBlob = null;
 let currentWordId = null;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', () => {
-    initNavigation();
-    loadDailyPrompt();
-    initStarterMedia();
-    loadStats();
-    renderCalendar();
-    loadPastRecordings();
-    initRecording();
-    initMediaLibrary();
-    initVocabulary();
-    initWriting();
-    checkTodayCompletion();
-    checkMicPermissionBanner();
-    initShuffleButton();
-    checkStorageUsage();
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Initialize IndexedDB and migrate data
+        await initDB();
+        await migrateFromLocalStorage();
+
+        // Initialize UI
+        initNavigation();
+        await loadDailyPrompt();
+        await initStarterMedia();
+        await loadStats();
+        await renderCalendar();
+        await loadPastRecordings();
+        initRecording();
+        initMediaLibrary();
+        initVocabulary();
+        initWriting();
+        await checkTodayCompletion();
+        await checkMicPermissionBanner();
+        initShuffleButton();
+        await checkStorageUsage();
+
+        console.log('App initialized with IndexedDB');
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        alert('Error loading app. Please refresh the page. / Njehie na-ebugo ngwa. Biko nwegharịa ibe a.');
+    }
 });
 
 // Starter Media Library
@@ -552,7 +788,7 @@ function reRecord() {
     currentAudioBlob = null;
 }
 
-function saveRecording() {
+async function saveRecording() {
     if (!currentAudioBlob) {
         alert('No recording found. Please record again. / Enweghị ndekọ. Biko dekọọkwa.');
         return;
@@ -563,7 +799,7 @@ function saveRecording() {
 
     // Convert blob to base64 for storage
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
         const base64Audio = reader.result;
 
         if (!base64Audio) {
@@ -571,39 +807,34 @@ function saveRecording() {
             return;
         }
 
-        // Get existing recordings
-        const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
-
-        // Add new recording with activity type
-        recordings.push({
+        // Create new recording
+        const newRecording = {
             date: today,
             timestamp: new Date().toISOString(),
             prompt: prompt,
             audio: base64Audio,
             type: 'prompt' // Track that this was a prompt response
-        });
+        };
 
         try {
-            localStorage.setItem('recordings', JSON.stringify(recordings));
+            // Save to IndexedDB
+            await dbPut('recordings', newRecording);
+
+            // Update UI
+            document.getElementById('playback-section').classList.add('hidden');
+            document.getElementById('completion-message').classList.remove('hidden');
+
+            // Update stats
+            await loadStats();
+            await renderCalendar();
+            await loadPastRecordings();
+
+            // Clear the audio blob
+            currentAudioBlob = null;
         } catch (e) {
-            if (e.name === 'QuotaExceededError') {
-                handleStorageError();
-                return;
-            }
-            throw e;
+            console.error('Error saving recording:', e);
+            alert('Error saving recording. Storage may be full. / Njehie ịchekwa ndekọ. Nchekwa nwere ike ijupụta.');
         }
-
-        // Update UI
-        document.getElementById('playback-section').classList.add('hidden');
-        document.getElementById('completion-message').classList.remove('hidden');
-
-        // Update stats
-        loadStats();
-        renderCalendar();
-        loadPastRecordings();
-
-        // Clear the audio blob
-        currentAudioBlob = null;
     };
 
     reader.onerror = () => {
