@@ -829,6 +829,9 @@ function deleteRecording(timestamp) {
     checkTodayCompletion();
 }
 
+// Make function globally accessible
+window.deleteRecording = deleteRecording;
+
 // Media Library
 function initMediaLibrary() {
     const addMediaBtn = document.getElementById('add-media-btn');
@@ -1067,6 +1070,9 @@ function updateMediaStatus(id, newStatus) {
     }
 }
 
+// Make function globally accessible
+window.updateMediaStatus = updateMediaStatus;
+
 function deleteMedia(id) {
     // Convert id to match the type in storage (string for starter media, number for user media)
     const media = JSON.parse(localStorage.getItem('media') || '[]');
@@ -1086,6 +1092,9 @@ function deleteMedia(id) {
     loadMediaList();
 }
 
+// Make function globally accessible
+window.deleteMedia = deleteMedia;
+
 function openReflectionModal(mediaId, mediaTitle) {
     currentMediaId = mediaId;
     document.getElementById('reflection-media-title').textContent = mediaTitle;
@@ -1098,6 +1107,9 @@ function openReflectionModal(mediaId, mediaTitle) {
     document.getElementById('modal-playback').classList.add('hidden');
     currentModalAudioBlob = null;
 }
+
+// Make function globally accessible
+window.openReflectionModal = openReflectionModal;
 
 function closeReflectionModal() {
     document.getElementById('reflection-modal').classList.add('hidden');
@@ -1360,6 +1372,9 @@ function deleteWord(id) {
     renderCalendar();
 }
 
+// Make function globally accessible
+window.deleteWord = deleteWord;
+
 function openVocabModal(wordId, igboWord, englishMeaning) {
     currentWordId = wordId;
     document.getElementById('vocab-word-display').textContent = igboWord;
@@ -1372,6 +1387,9 @@ function openVocabModal(wordId, igboWord, englishMeaning) {
     document.getElementById('vocab-playback').classList.add('hidden');
     currentVocabAudioBlob = null;
 }
+
+// Make function globally accessible
+window.openVocabModal = openVocabModal;
 
 function closeVocabModal() {
     document.getElementById('vocab-modal').classList.add('hidden');
@@ -1720,6 +1738,9 @@ function deleteWriting(timestamp) {
     renderCalendar();
     checkTodayWriting();
 }
+
+// Make function globally accessible
+window.deleteWriting = deleteWriting;
 
 // Storage Management
 function getStorageSize() {
