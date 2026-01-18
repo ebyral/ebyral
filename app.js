@@ -395,8 +395,15 @@ function initRecording() {
 }
 
 function recordMore() {
-    document.getElementById('recording-controls').classList.remove('hidden');
+    // Reset all states to allow new recording
     document.getElementById('completion-message').classList.add('hidden');
+    document.getElementById('playback-section').classList.add('hidden');
+    document.getElementById('recording-controls').classList.remove('hidden');
+    document.getElementById('record-btn').classList.remove('hidden');
+    document.getElementById('recording-status').classList.add('hidden');
+
+    // Clear current audio blob
+    currentAudioBlob = null;
 }
 
 async function startRecording() {
@@ -424,6 +431,15 @@ async function startRecording() {
         };
 
         mediaRecorder.onstop = () => {
+            if (audioChunks.length === 0) {
+                console.error('No audio chunks recorded');
+                alert('Recording failed. Please try again. / Ndekọ dara ada. Biko nwaa ọzọ.');
+                // Reset UI
+                document.getElementById('recording-status').classList.add('hidden');
+                document.getElementById('record-btn').classList.remove('hidden');
+                return;
+            }
+
             const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
             currentAudioBlob = audioBlob;
             const audioUrl = URL.createObjectURL(audioBlob);
@@ -471,8 +487,16 @@ async function startRecording() {
 
 function stopRecording() {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        document.getElementById('recording-status').classList.add('hidden');
+        // Request any pending data before stopping
+        mediaRecorder.requestData();
+
+        // Small delay to ensure last chunk is captured
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            document.getElementById('recording-status').classList.add('hidden');
+        }, 100);
     }
 }
 
@@ -485,7 +509,10 @@ function reRecord() {
 }
 
 function saveRecording() {
-    if (!currentAudioBlob) return;
+    if (!currentAudioBlob) {
+        alert('No recording found. Please record again. / Enweghị ndekọ. Biko dekọọkwa.');
+        return;
+    }
 
     const today = new Date().toDateString();
     const prompt = document.getElementById('daily-prompt').textContent;
@@ -494,6 +521,11 @@ function saveRecording() {
     const reader = new FileReader();
     reader.onloadend = () => {
         const base64Audio = reader.result;
+
+        if (!base64Audio) {
+            alert('Error saving recording. Please try again. / Njehie ịchekwa ndekọ. Biko nwaa ọzọ.');
+            return;
+        }
 
         // Get existing recordings
         const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
@@ -517,6 +549,13 @@ function saveRecording() {
         loadStats();
         renderCalendar();
         loadPastRecordings();
+
+        // Clear the audio blob
+        currentAudioBlob = null;
+    };
+
+    reader.onerror = () => {
+        alert('Error reading recording. Please try again. / Njehie ịgụ ndekọ. Biko nwaa ọzọ.');
     };
 
     reader.readAsDataURL(currentAudioBlob);
