@@ -252,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkTodayCompletion();
     checkMicPermissionBanner();
     initShuffleButton();
+    checkStorageUsage();
 });
 
 // Starter Media Library
@@ -539,7 +540,15 @@ function saveRecording() {
             type: 'prompt' // Track that this was a prompt response
         });
 
-        localStorage.setItem('recordings', JSON.stringify(recordings));
+        try {
+            localStorage.setItem('recordings', JSON.stringify(recordings));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+                handleStorageError();
+                return;
+            }
+            throw e;
+        }
 
         // Update UI
         document.getElementById('playback-section').classList.add('hidden');
@@ -1168,7 +1177,16 @@ function saveModalReflection() {
                 }
             }
 
-            localStorage.setItem('media', JSON.stringify(media));
+            try {
+                localStorage.setItem('media', JSON.stringify(media));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    handleStorageError();
+                    closeReflectionModal();
+                    return;
+                }
+                throw e;
+            }
 
             closeReflectionModal();
             loadMediaList();
@@ -1411,7 +1429,16 @@ function saveVocabPractice() {
                 audio: base64Audio
             });
 
-            localStorage.setItem('vocabulary-words', JSON.stringify(words));
+            try {
+                localStorage.setItem('vocabulary-words', JSON.stringify(words));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    handleStorageError();
+                    closeVocabModal();
+                    return;
+                }
+                throw e;
+            }
 
             // Track as vocabulary activity for streak
             const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
@@ -1546,7 +1573,15 @@ function saveWriting() {
         wordCount: text.split(/\s+/).filter(word => word.length > 0).length
     });
 
-    localStorage.setItem('writings', JSON.stringify(writings));
+    try {
+        localStorage.setItem('writings', JSON.stringify(writings));
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            handleStorageError();
+            return;
+        }
+        throw e;
+    }
 
     // Update UI
     document.getElementById('writing-controls').classList.add('hidden');
@@ -1641,4 +1676,84 @@ function deleteWriting(timestamp) {
     loadStats();
     renderCalendar();
     checkTodayWriting();
+}
+
+// Storage Management
+function getStorageSize() {
+    let total = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            total += localStorage[key].length + key.length;
+        }
+    }
+    // Convert to MB
+    return (total / 1024 / 1024).toFixed(2);
+}
+
+function getStorageBreakdown() {
+    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+    const media = JSON.parse(localStorage.getItem('media') || '[]');
+
+    const recordingsSize = (JSON.stringify(recordings).length / 1024 / 1024).toFixed(2);
+    const writingsSize = (JSON.stringify(writings).length / 1024 / 1024).toFixed(2);
+    const wordsSize = (JSON.stringify(words).length / 1024 / 1024).toFixed(2);
+    const mediaSize = (JSON.stringify(media).length / 1024 / 1024).toFixed(2);
+
+    return {
+        recordings: { count: recordings.length, size: recordingsSize },
+        writings: { count: writings.length, size: writingsSize },
+        words: { count: words.length, size: wordsSize },
+        media: { count: media.filter(m => m.reflection).length, size: mediaSize }
+    };
+}
+
+function checkStorageUsage() {
+    try {
+        const totalSize = parseFloat(getStorageSize());
+        const maxSize = 5; // Most browsers allow 5-10MB, using 5 as conservative estimate
+
+        // Warn at 80% capacity (4MB)
+        if (totalSize >= maxSize * 0.8) {
+            const breakdown = getStorageBreakdown();
+            const message = `Storage Warning / Ịdọ Aka Na Ntị Nchekwa\n\n` +
+                `You're using ${totalSize}MB of ~${maxSize}MB available.\n` +
+                `Ị na-eji ${totalSize}MB nke ~${maxSize}MB dị.\n\n` +
+                `Breakdown / Nkewa:\n` +
+                `• Practice recordings: ${breakdown.recordings.count} (${breakdown.recordings.size}MB)\n` +
+                `• Writings: ${breakdown.writings.count} (${breakdown.writings.size}MB)\n` +
+                `• Vocabulary: ${breakdown.words.count} words (${breakdown.words.size}MB)\n` +
+                `• Media reflections: ${breakdown.media.count} (${breakdown.media.size}MB)\n\n` +
+                `Consider deleting old items to free up space.\n` +
+                `Tụlee ihichapụ ihe ochie iji mepee ohere.`;
+
+            // Only show warning once per session
+            if (!sessionStorage.getItem('storage-warning-shown')) {
+                alert(message);
+                sessionStorage.setItem('storage-warning-shown', 'true');
+            }
+        }
+    } catch (e) {
+        console.error('Error checking storage:', e);
+    }
+}
+
+function handleStorageError() {
+    const breakdown = getStorageBreakdown();
+    const totalSize = getStorageSize();
+
+    const message = `Storage Full! / Nchekwa Jupụtara!\n\n` +
+        `You've used ${totalSize}MB and reached the limit.\n` +
+        `I jirila ${totalSize}MB wee ruo oke.\n\n` +
+        `Please delete some old recordings to continue:\n` +
+        `Biko hichapụ ụfọdụ ndekọ ochie iji gaa n'ihu:\n\n` +
+        `• Practice recordings: ${breakdown.recordings.count} items\n` +
+        `• Writings: ${breakdown.writings.count} items\n` +
+        `• Vocabulary: ${breakdown.words.count} words\n` +
+        `• Media reflections: ${breakdown.media.count} items\n\n` +
+        `Scroll down to see your past items and delete what you no longer need.\n` +
+        `Gbanwee ala ka ịhụ ihe gara aga gị wee hichapụ ihe ị na-achọghị.`;
+
+    alert(message);
 }
