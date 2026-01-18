@@ -492,9 +492,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Starter Media Library
-function initStarterMedia() {
-    const media = JSON.parse(localStorage.getItem('media') || '[]');
-    const starterVersion = localStorage.getItem('starterMediaVersion') || '0';
+async function initStarterMedia() {
+    const media = await dbGetAll('media');
+    const starterVersion = await getSetting('starterMediaVersion', '0');
 
     // Version 4: Added Radio Garden stations and BBC Igbo
     const CURRENT_VERSION = '4';
@@ -530,8 +530,8 @@ function initStarterMedia() {
         });
 
         const updatedMedia = [...updatedStarterMedia, ...userMedia];
-        localStorage.setItem('media', JSON.stringify(updatedMedia));
-        localStorage.setItem('starterMediaVersion', CURRENT_VERSION);
+        await dbPutAll('media', updatedMedia);
+        await setSetting('starterMediaVersion', CURRENT_VERSION);
     } else {
         // Check if starter media already exists
         const hasStarterMedia = media.some(item => item.isPreloaded);
@@ -539,22 +539,22 @@ function initStarterMedia() {
         if (!hasStarterMedia) {
             // Add starter media to the beginning
             const updatedMedia = [...STARTER_MEDIA, ...media];
-            localStorage.setItem('media', JSON.stringify(updatedMedia));
-            localStorage.setItem('starterMediaVersion', CURRENT_VERSION);
+            await dbPutAll('media', updatedMedia);
+            await setSetting('starterMediaVersion', CURRENT_VERSION);
         }
     }
 }
 
 // Mic Permission Banner
-function checkMicPermissionBanner() {
-    const bannerDismissed = localStorage.getItem('mic-banner-dismissed');
+async function checkMicPermissionBanner() {
+    const bannerDismissed = await getSetting('mic-banner-dismissed', false);
     if (!bannerDismissed) {
         document.getElementById('mic-permission-banner').classList.remove('hidden');
     }
 }
 
-function dismissMicBanner() {
-    localStorage.setItem('mic-banner-dismissed', 'true');
+async function dismissMicBanner() {
+    await setSetting('mic-banner-dismissed', true);
     document.getElementById('mic-permission-banner').classList.add('hidden');
 }
 
@@ -584,9 +584,9 @@ function switchScreen(screen) {
 }
 
 // Daily Prompt
-function loadDailyPrompt() {
+async function loadDailyPrompt() {
     const today = new Date().toDateString();
-    const savedPrompt = localStorage.getItem(`prompt-${today}`);
+    const savedPrompt = await getSetting(`prompt-${today}`);
 
     let prompt;
     if (savedPrompt) {
@@ -595,7 +595,7 @@ function loadDailyPrompt() {
         // Generate random prompt for today
         const randomIndex = Math.floor(Math.random() * PROMPTS.length);
         prompt = PROMPTS[randomIndex];
-        localStorage.setItem(`prompt-${today}`, prompt);
+        await setSetting(`prompt-${today}`, prompt);
     }
 
     document.getElementById('daily-prompt').textContent = prompt;
@@ -607,9 +607,9 @@ function initShuffleButton() {
     shuffleBtn.addEventListener('click', shufflePrompt);
 }
 
-function shufflePrompt() {
+async function shufflePrompt() {
     // Get recently used prompts (last 15)
-    const recentPrompts = JSON.parse(localStorage.getItem('recent-prompts') || '[]');
+    const recentPrompts = await getSetting('recent-prompts', []);
 
     // Filter out recent prompts to avoid repetition
     let availablePrompts = PROMPTS.filter(p => !recentPrompts.includes(p));
@@ -630,14 +630,14 @@ function shufflePrompt() {
 
     // Save it so it persists for this session
     const today = new Date().toDateString();
-    localStorage.setItem(`prompt-${today}`, newPrompt);
+    await setSetting(`prompt-${today}`, newPrompt);
 
     // Track this prompt as recently used (keep last 15)
     recentPrompts.push(newPrompt);
     if (recentPrompts.length > 15) {
         recentPrompts.shift(); // Remove oldest
     }
-    localStorage.setItem('recent-prompts', JSON.stringify(recentPrompts));
+    await setSetting('recent-prompts', recentPrompts);
 }
 
 // Recording
@@ -697,7 +697,7 @@ async function startRecording() {
         });
 
         // Hide banner once permission is granted
-        localStorage.setItem('mic-banner-dismissed', 'true');
+        await setSetting('mic-banner-dismissed', true);
         document.getElementById('mic-permission-banner').classList.add('hidden');
 
         // Let Safari choose the best format - don't force mimeType
@@ -851,8 +851,8 @@ function checkTodayCompletion() {
 }
 
 // Stats
-function loadStats() {
-    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+async function loadStats() {
+    const recordings = await dbGetAll('recordings');
 
     // Total recordings
     document.getElementById('total-recordings').textContent = recordings.length;
@@ -891,12 +891,12 @@ function calculateStreak(recordings) {
 }
 
 // Calendar
-function renderCalendar() {
+async function renderCalendar() {
     const calendar = document.getElementById('calendar');
     calendar.innerHTML = '';
 
-    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
-    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+    const recordings = await dbGetAll('recordings');
+    const writings = await dbGetAll('writings');
     const recordingDates = new Set(recordings.map(r => r.date));
 
     // Get current month
@@ -1013,8 +1013,8 @@ function renderCalendar() {
 }
 
 // Past Recordings
-function loadPastRecordings() {
-    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+async function loadPastRecordings() {
+    const recordings = await dbGetAll('recordings');
     const list = document.getElementById('past-recordings-list');
 
     if (recordings.length === 0) {
@@ -1044,20 +1044,23 @@ function loadPastRecordings() {
     `).join('');
 }
 
-function deleteRecording(timestamp) {
+async function deleteRecording(timestamp) {
     if (!confirm('Are you sure you want to delete this recording? / Ị ji n\'aka na ị chọrọ ihichapụ ndekọ a?')) {
         return;
     }
 
-    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
-    const updatedRecordings = recordings.filter(r => r.timestamp !== timestamp);
-    localStorage.setItem('recordings', JSON.stringify(updatedRecordings));
+    try {
+        await dbDelete('recordings', timestamp);
 
-    // Refresh displays
-    loadPastRecordings();
-    loadStats();
-    renderCalendar();
-    checkTodayCompletion();
+        // Refresh displays
+        await loadPastRecordings();
+        await loadStats();
+        await renderCalendar();
+        await checkTodayCompletion();
+    } catch (e) {
+        console.error('Error deleting recording:', e);
+        alert('Error deleting recording. / Njehie ihichapụ ndekọ.');
+    }
 }
 
 // Make function globally accessible
@@ -1128,8 +1131,6 @@ async function addMedia() {
     const notes = document.getElementById('media-notes').value;
     const fileInput = document.getElementById('media-file');
 
-    const media = JSON.parse(localStorage.getItem('media') || '[]');
-
     const newMedia = {
         id: Date.now(),
         title,
@@ -1146,29 +1147,27 @@ async function addMedia() {
         const file = fileInput.files[0];
         const reader = new FileReader();
 
-        reader.onloadend = () => {
+        reader.onloadend = async () => {
             newMedia.file = reader.result;
-            media.push(newMedia);
-            localStorage.setItem('media', JSON.stringify(media));
+            await dbPut('media', newMedia);
 
             document.getElementById('add-media-form').classList.add('hidden');
             document.getElementById('media-form').reset();
-            loadMediaList();
+            await loadMediaList();
         };
 
         reader.readAsDataURL(file);
     } else {
-        media.push(newMedia);
-        localStorage.setItem('media', JSON.stringify(media));
+        await dbPut('media', newMedia);
 
         document.getElementById('add-media-form').classList.add('hidden');
         document.getElementById('media-form').reset();
-        loadMediaList();
+        await loadMediaList();
     }
 }
 
-function loadMediaList() {
-    const media = JSON.parse(localStorage.getItem('media') || '[]');
+async function loadMediaList() {
+    const media = await dbGetAll('media');
     const list = document.getElementById('media-list');
 
     if (media.length === 0) {
@@ -1307,58 +1306,60 @@ function extractYouTubeId(url) {
     return null;
 }
 
-function updateMediaStatus(id, newStatus) {
+async function updateMediaStatus(id, newStatus) {
     console.log('updateMediaStatus called:', id, newStatus);
 
-    const media = JSON.parse(localStorage.getItem('media') || '[]');
-    const item = media.find(m => String(m.id) === String(id));
-
-    if (!item) {
-        console.error('Media item not found:', id);
-        return;
-    }
-
-    const oldStatus = item.status;
-    item.status = newStatus;
-
     try {
-        localStorage.setItem('media', JSON.stringify(media));
+        const item = await dbGet('media', id);
+
+        if (!item) {
+            console.error('Media item not found:', id);
+            return;
+        }
+
+        const oldStatus = item.status;
+        item.status = newStatus;
+
+        await dbPut('media', item);
         console.log('Status updated successfully');
+
+        // If changed to completed and no reflection, open modal
+        if (newStatus === 'completed' && !item.reflection && oldStatus !== 'completed') {
+            console.log('Opening reflection modal for completed item');
+            openReflectionModal(id, item.title);
+        } else {
+            await loadMediaList();
+        }
     } catch (e) {
         console.error('Error saving status:', e);
         alert('Error saving status. / Njehie ịchekwa ọnọdụ.');
-        return;
-    }
-
-    // If changed to completed and no reflection, open modal
-    if (newStatus === 'completed' && !item.reflection && oldStatus !== 'completed') {
-        console.log('Opening reflection modal for completed item');
-        openReflectionModal(id, item.title);
-    } else {
-        loadMediaList();
     }
 }
 
 // Make function globally accessible
 window.updateMediaStatus = updateMediaStatus;
 
-function deleteMedia(id) {
-    // Convert id to match the type in storage (string for starter media, number for user media)
-    const media = JSON.parse(localStorage.getItem('media') || '[]');
-    const item = media.find(m => String(m.id) === String(id));
+async function deleteMedia(id) {
+    try {
+        // Convert id to match the type in storage (string for starter media, number for user media)
+        const media = await dbGetAll('media');
+        const item = media.find(m => String(m.id) === String(id));
 
-    if (item && item.isPreloaded) {
-        alert('Starter library items cannot be deleted. / Enweghị ike ihichapụ ihe ndị dị na ọba akwụkwọ mmalite.');
-        return;
+        if (item && item.isPreloaded) {
+            alert('Starter library items cannot be deleted. / Enweghị ike ihichapụ ihe ndị dị na ọba akwụkwọ mmalite.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this media item? / Ị ji n\'aka na ị chọrọ ihichapụ ihe mgbasa ozi a?')) {
+            return;
+        }
+
+        await dbDelete('media', id);
+        await loadMediaList();
+    } catch (e) {
+        console.error('Error deleting media:', e);
+        alert('Error deleting media. / Njehie ihichapụ mgbasa ozi.');
     }
-
-    if (!confirm('Are you sure you want to delete this media item? / Ị ji n\'aka na ị chọrọ ihichapụ ihe mgbasa ozi a?')) {
-        return;
-    }
-
-    const updatedMedia = media.filter(m => String(m.id) !== String(id));
-    localStorage.setItem('media', JSON.stringify(updatedMedia));
-    loadMediaList();
 }
 
 // Make function globally accessible
@@ -1479,59 +1480,57 @@ function reRecordModal() {
     currentModalAudioBlob = null;
 }
 
-function saveModalReflection() {
+async function saveModalReflection() {
     if (!currentModalAudioBlob || !currentMediaId) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-        const base64Audio = reader.result;
+    reader.onloadend = async () => {
+        try {
+            const base64Audio = reader.result;
+            const item = await dbGet('media', currentMediaId);
 
-        const media = JSON.parse(localStorage.getItem('media') || '[]');
-        const item = media.find(m => String(m.id) === String(currentMediaId));
+            if (item) {
+                item.reflection = base64Audio;
 
-        if (item) {
-            item.reflection = base64Audio;
+                // If item is marked as completed and has reflection, track as media activity
+                if (item.status === 'completed') {
+                    const today = new Date().toDateString();
+                    const recordings = await dbGetAll('recordings');
 
-            // If item is marked as completed and has reflection, track as media activity
-            if (item.status === 'completed') {
-                const today = new Date().toDateString();
-                const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+                    // Check if we already tracked this media completion today
+                    const alreadyTracked = recordings.some(r =>
+                        r.date === today && r.type === 'media' && String(r.mediaId) === String(item.id)
+                    );
 
-                // Check if we already tracked this media completion today
-                const alreadyTracked = recordings.some(r =>
-                    r.date === today && r.type === 'media' && String(r.mediaId) === String(item.id)
-                );
+                    if (!alreadyTracked) {
+                        const newRecording = {
+                            date: today,
+                            timestamp: new Date().toISOString(),
+                            type: 'media',
+                            mediaId: item.id,
+                            mediaTitle: item.title,
+                            audio: base64Audio
+                        };
+                        await dbPut('recordings', newRecording);
 
-                if (!alreadyTracked) {
-                    recordings.push({
-                        date: today,
-                        timestamp: new Date().toISOString(),
-                        type: 'media',
-                        mediaId: item.id,
-                        mediaTitle: item.title,
-                        audio: base64Audio
-                    });
-                    localStorage.setItem('recordings', JSON.stringify(recordings));
-
-                    // Update stats and calendar
-                    loadStats();
-                    renderCalendar();
+                        // Update stats and calendar
+                        await loadStats();
+                        await renderCalendar();
+                    }
                 }
-            }
 
-            try {
-                localStorage.setItem('media', JSON.stringify(media));
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    handleStorageError();
-                    closeReflectionModal();
-                    return;
-                }
-                throw e;
+                await dbPut('media', item);
+                closeReflectionModal();
+                await loadMediaList();
             }
-
+        } catch (e) {
+            console.error('Error saving reflection:', e);
+            if (e.name === 'QuotaExceededError') {
+                handleStorageError();
+            } else {
+                alert('Error saving reflection. / Njehie ịchekwa ntụgharị uche.');
+            }
             closeReflectionModal();
-            loadMediaList();
         }
     };
 
@@ -1572,13 +1571,11 @@ function initVocabulary() {
     loadWordsList();
 }
 
-function addWord() {
+async function addWord() {
     const igboWord = document.getElementById('word-igbo').value;
     const englishMeaning = document.getElementById('word-english').value;
     const examples = document.getElementById('word-examples').value;
     const notes = document.getElementById('word-notes').value;
-
-    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
 
     const newWord = {
         id: Date.now(),
@@ -1589,16 +1586,15 @@ function addWord() {
         practices: [] // Array of practice recordings with dates
     };
 
-    words.push(newWord);
-    localStorage.setItem('vocabulary-words', JSON.stringify(words));
+    await dbPut('vocabulary', newWord);
 
     document.getElementById('add-word-form').classList.add('hidden');
     document.getElementById('word-form').reset();
-    loadWordsList();
+    await loadWordsList();
 }
 
-function loadWordsList() {
-    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+async function loadWordsList() {
+    const words = await dbGetAll('vocabulary');
     const list = document.getElementById('words-list');
 
     if (words.length === 0) {
@@ -1649,43 +1645,50 @@ function loadWordsList() {
     `).join('');
 }
 
-function deleteWord(id) {
+async function deleteWord(id) {
     if (!confirm('Are you sure you want to delete this word? / Ị ji n\'aka na ị chọrọ ihichapụ okwu a?')) {
         return;
     }
 
-    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
-    const updatedWords = words.filter(w => w.id !== id);
-    localStorage.setItem('vocabulary-words', JSON.stringify(updatedWords));
-    loadWordsList();
+    try {
+        await dbDelete('vocabulary', id);
+        await loadWordsList();
 
-    // Refresh calendar in case this affected streaks
-    loadStats();
-    renderCalendar();
+        // Refresh calendar in case this affected streaks
+        await loadStats();
+        await renderCalendar();
+    } catch (e) {
+        console.error('Error deleting word:', e);
+        alert('Error deleting word. / Njehie ihichapụ okwu.');
+    }
 }
 
 // Make function globally accessible
 window.deleteWord = deleteWord;
 
-function deleteVocabPractice(wordId, timestamp) {
+async function deleteVocabPractice(wordId, timestamp) {
     if (!confirm('Delete this practice recording? / Hichapụ ndekọ omume a?')) {
         return;
     }
 
-    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
-    const word = words.find(w => w.id === wordId);
+    try {
+        const word = await dbGet('vocabulary', wordId);
 
-    if (word) {
-        // Remove the specific practice
-        word.practices = word.practices.filter(p => p.timestamp !== timestamp);
-        localStorage.setItem('vocabulary-words', JSON.stringify(words));
+        if (word) {
+            // Remove the specific practice
+            word.practices = word.practices.filter(p => p.timestamp !== timestamp);
+            await dbPut('vocabulary', word);
 
-        // Refresh the display
-        loadWordsList();
+            // Refresh the display
+            await loadWordsList();
 
-        // Update calendar in case this was the only practice for today
-        loadStats();
-        renderCalendar();
+            // Update calendar in case this was the only practice for today
+            await loadStats();
+            await renderCalendar();
+        }
+    } catch (e) {
+        console.error('Error deleting vocabulary practice:', e);
+        alert('Error deleting practice. / Njehie ihichapụ omume.');
     }
 }
 
@@ -1788,62 +1791,62 @@ function reRecordVocab() {
     currentVocabAudioBlob = null;
 }
 
-function saveVocabPractice() {
+async function saveVocabPractice() {
     if (!currentVocabAudioBlob || !currentWordId) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-        const base64Audio = reader.result;
-        const today = new Date().toDateString();
+    reader.onloadend = async () => {
+        try {
+            const base64Audio = reader.result;
+            const today = new Date().toDateString();
 
-        const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
-        const word = words.find(w => w.id === currentWordId);
+            const word = await dbGet('vocabulary', currentWordId);
 
-        if (word) {
-            // Add practice to word
-            word.practices.unshift({
-                date: today,
-                timestamp: new Date().toISOString(),
-                audio: base64Audio
-            });
-
-            try {
-                localStorage.setItem('vocabulary-words', JSON.stringify(words));
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    handleStorageError();
-                    closeVocabModal();
-                    return;
-                }
-                throw e;
-            }
-
-            // Track as vocabulary activity for streak
-            const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
-
-            // Check if we already tracked vocabulary practice today
-            const alreadyTrackedToday = recordings.some(r =>
-                r.date === today && r.type === 'vocabulary'
-            );
-
-            if (!alreadyTrackedToday) {
-                recordings.push({
+            if (word) {
+                // Add practice to word
+                word.practices.unshift({
                     date: today,
                     timestamp: new Date().toISOString(),
-                    type: 'vocabulary',
-                    wordId: word.id,
-                    word: word.igboWord,
                     audio: base64Audio
                 });
-                localStorage.setItem('recordings', JSON.stringify(recordings));
 
-                // Update stats and calendar
-                loadStats();
-                renderCalendar();
+                await dbPut('vocabulary', word);
+
+                // Track as vocabulary activity for streak
+                const recordings = await dbGetAll('recordings');
+
+                // Check if we already tracked vocabulary practice today
+                const alreadyTrackedToday = recordings.some(r =>
+                    r.date === today && r.type === 'vocabulary'
+                );
+
+                if (!alreadyTrackedToday) {
+                    const newRecording = {
+                        date: today,
+                        timestamp: new Date().toISOString(),
+                        type: 'vocabulary',
+                        wordId: word.id,
+                        word: word.igboWord,
+                        audio: base64Audio
+                    };
+                    await dbPut('recordings', newRecording);
+
+                    // Update stats and calendar
+                    await loadStats();
+                    await renderCalendar();
+                }
+
+                closeVocabModal();
+                await loadWordsList();
             }
-
+        } catch (e) {
+            console.error('Error saving vocabulary practice:', e);
+            if (e.name === 'QuotaExceededError') {
+                handleStorageError();
+            } else {
+                alert('Error saving practice. / Njehie ịchekwa omume.');
+            }
             closeVocabModal();
-            loadWordsList();
         }
     };
 
@@ -1851,16 +1854,16 @@ function saveVocabPractice() {
 }
 
 // Writing Management
-function initWriting() {
+async function initWriting() {
     const shuffleWritingBtn = document.getElementById('shuffle-writing-btn');
     const saveWritingBtn = document.getElementById('save-writing-btn');
     const newWritingBtn = document.getElementById('new-writing-btn');
     const writingTextarea = document.getElementById('writing-textarea');
 
-    loadWritingPrompt();
-    loadWritingStats();
-    loadPastWritings();
-    checkTodayWriting();
+    await loadWritingPrompt();
+    await loadWritingStats();
+    await loadPastWritings();
+    await checkTodayWriting();
 
     shuffleWritingBtn.addEventListener('click', shuffleWritingPrompt);
     saveWritingBtn.addEventListener('click', saveWriting);
@@ -1870,9 +1873,9 @@ function initWriting() {
     writingTextarea.addEventListener('input', updateWordCount);
 }
 
-function loadWritingPrompt() {
+async function loadWritingPrompt() {
     const today = new Date().toDateString();
-    const savedPrompt = localStorage.getItem(`writing-prompt-${today}`);
+    const savedPrompt = await getSetting(`writing-prompt-${today}`);
 
     let prompt;
     if (savedPrompt) {
@@ -1881,15 +1884,15 @@ function loadWritingPrompt() {
         // Generate random writing prompt for today
         const randomIndex = Math.floor(Math.random() * WRITING_PROMPTS.length);
         prompt = WRITING_PROMPTS[randomIndex];
-        localStorage.setItem(`writing-prompt-${today}`, prompt);
+        await setSetting(`writing-prompt-${today}`, prompt);
     }
 
     document.getElementById('writing-prompt').textContent = prompt;
 }
 
-function shuffleWritingPrompt() {
+async function shuffleWritingPrompt() {
     // Get recently used writing prompts (last 15)
-    const recentPrompts = JSON.parse(localStorage.getItem('recent-writing-prompts') || '[]');
+    const recentPrompts = await getSetting('recent-writing-prompts', []);
 
     // Filter out recent prompts to avoid repetition
     let availablePrompts = WRITING_PROMPTS.filter(p => !recentPrompts.includes(p));
@@ -1909,14 +1912,14 @@ function shuffleWritingPrompt() {
 
     // Save it so it persists for this session
     const today = new Date().toDateString();
-    localStorage.setItem(`writing-prompt-${today}`, newPrompt);
+    await setSetting(`writing-prompt-${today}`, newPrompt);
 
     // Track this prompt as recently used (keep last 15)
     recentPrompts.push(newPrompt);
     if (recentPrompts.length > 15) {
         recentPrompts.shift(); // Remove oldest
     }
-    localStorage.setItem('recent-writing-prompts', JSON.stringify(recentPrompts));
+    await setSetting('recent-writing-prompts', recentPrompts);
 }
 
 function updateWordCount() {
@@ -1926,7 +1929,7 @@ function updateWordCount() {
     document.getElementById('word-count').textContent = words.length;
 }
 
-function saveWriting() {
+async function saveWriting() {
     const textarea = document.getElementById('writing-textarea');
     const text = textarea.value.trim();
 
@@ -1938,40 +1941,38 @@ function saveWriting() {
     const today = new Date().toDateString();
     const prompt = document.getElementById('writing-prompt').textContent;
 
-    // Get existing writings
-    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
-
     // Add new writing with activity type
-    writings.push({
+    const newWriting = {
         date: today,
         timestamp: new Date().toISOString(),
         prompt: prompt,
         text: text,
         type: 'writing',
         wordCount: text.split(/\s+/).filter(word => word.length > 0).length
-    });
+    };
 
     try {
-        localStorage.setItem('writings', JSON.stringify(writings));
+        await dbPut('writings', newWriting);
+
+        // Update UI
+        document.getElementById('writing-controls').classList.add('hidden');
+        document.getElementById('writing-completion-message').classList.remove('hidden');
+        textarea.value = '';
+        updateWordCount();
+
+        // Update stats
+        await loadWritingStats();
+        await loadStats(); // Update main stats
+        await renderCalendar();
+        await loadPastWritings();
     } catch (e) {
+        console.error('Error saving writing:', e);
         if (e.name === 'QuotaExceededError') {
             handleStorageError();
-            return;
+        } else {
+            alert('Error saving writing. / Njehie ịchekwa ide.');
         }
-        throw e;
     }
-
-    // Update UI
-    document.getElementById('writing-controls').classList.add('hidden');
-    document.getElementById('writing-completion-message').classList.remove('hidden');
-    textarea.value = '';
-    updateWordCount();
-
-    // Update stats
-    loadWritingStats();
-    loadStats(); // Update main stats
-    renderCalendar();
-    loadPastWritings();
 }
 
 function startNewWriting() {
@@ -1979,9 +1980,9 @@ function startNewWriting() {
     document.getElementById('writing-completion-message').classList.add('hidden');
 }
 
-function checkTodayWriting() {
+async function checkTodayWriting() {
     const today = new Date().toDateString();
-    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+    const writings = await dbGetAll('writings');
     const todayWriting = writings.find(w => w.date === today);
 
     if (todayWriting) {
@@ -1990,8 +1991,8 @@ function checkTodayWriting() {
     }
 }
 
-function loadWritingStats() {
-    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+async function loadWritingStats() {
+    const writings = await dbGetAll('writings');
 
     // Total writings
     document.getElementById('total-writings').textContent = writings.length;
@@ -2001,8 +2002,8 @@ function loadWritingStats() {
     document.getElementById('writing-streak').textContent = streak;
 }
 
-function loadPastWritings() {
-    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
+async function loadPastWritings() {
+    const writings = await dbGetAll('writings');
     const list = document.getElementById('past-writings-list');
 
     if (writings.length === 0) {
@@ -2039,21 +2040,24 @@ function loadPastWritings() {
     `).join('');
 }
 
-function deleteWriting(timestamp) {
+async function deleteWriting(timestamp) {
     if (!confirm('Are you sure you want to delete this writing? / Ị ji n\'aka na ị chọrọ ihichapụ ide a?')) {
         return;
     }
 
-    const writings = JSON.parse(localStorage.getItem('writings') || '[]');
-    const updatedWritings = writings.filter(w => w.timestamp !== timestamp);
-    localStorage.setItem('writings', JSON.stringify(updatedWritings));
+    try {
+        await dbDelete('writings', timestamp);
 
-    // Refresh displays
-    loadPastWritings();
-    loadWritingStats();
-    loadStats();
-    renderCalendar();
-    checkTodayWriting();
+        // Refresh displays
+        await loadPastWritings();
+        await loadWritingStats();
+        await loadStats();
+        await renderCalendar();
+        await checkTodayWriting();
+    } catch (e) {
+        console.error('Error deleting writing:', e);
+        alert('Error deleting writing. / Njehie ihichapụ ide.');
+    }
 }
 
 // Make function globally accessible
