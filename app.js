@@ -385,11 +385,18 @@ function initRecording() {
     const stopBtn = document.getElementById('stop-btn');
     const rerecordBtn = document.getElementById('rerecord-btn');
     const saveBtn = document.getElementById('save-btn');
+    const recordMoreBtn = document.getElementById('record-more-btn');
 
     if (recordBtn) recordBtn.addEventListener('click', startRecording);
     if (stopBtn) stopBtn.addEventListener('click', stopRecording);
     if (rerecordBtn) rerecordBtn.addEventListener('click', reRecord);
     if (saveBtn) saveBtn.addEventListener('click', saveRecording);
+    if (recordMoreBtn) recordMoreBtn.addEventListener('click', recordMore);
+}
+
+function recordMore() {
+    document.getElementById('recording-controls').classList.remove('hidden');
+    document.getElementById('completion-message').classList.add('hidden');
 }
 
 async function startRecording() {
@@ -515,16 +522,10 @@ function saveRecording() {
     reader.readAsDataURL(currentAudioBlob);
 }
 
-// Check if today is completed
+// Check if today is completed (no longer restricts to one recording)
 function checkTodayCompletion() {
-    const today = new Date().toDateString();
-    const recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
-    const todayRecording = recordings.find(r => r.date === today);
-
-    if (todayRecording) {
-        document.getElementById('recording-controls').classList.add('hidden');
-        document.getElementById('completion-message').classList.remove('hidden');
-    }
+    // Removed restriction - allow multiple recordings per day
+    // Users can now record as many prompts as they want each day
 }
 
 // Stats
