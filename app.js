@@ -863,6 +863,30 @@ function initMediaLibrary() {
     if (modalRerecordBtn) modalRerecordBtn.addEventListener('click', reRecordModal);
     if (modalSaveBtn) modalSaveBtn.addEventListener('click', saveModalReflection);
 
+    // Event delegation for media reflection buttons
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('media-reflection-btn')) {
+            const mediaId = e.target.getAttribute('data-media-id');
+            const mediaTitle = e.target.getAttribute('data-media-title');
+            if (mediaId && mediaTitle) {
+                console.log('Reflection button clicked via delegation:', mediaId, mediaTitle);
+                openReflectionModal(mediaId, mediaTitle);
+            }
+        }
+    });
+
+    // Event delegation for status dropdowns
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('media-status-select')) {
+            const mediaId = e.target.getAttribute('data-media-id');
+            const newStatus = e.target.value;
+            if (mediaId) {
+                console.log('Status changed via delegation:', mediaId, newStatus);
+                updateMediaStatus(mediaId, newStatus);
+            }
+        }
+    });
+
     loadMediaList();
 }
 
@@ -939,13 +963,13 @@ function loadMediaList() {
             ${embedContent}
             ${item.notes ? `<div class="media-link" style="font-style: italic; color: #6c757d;">${item.notes}</div>` : ''}
             <div class="media-status">
-                <select class="status-select" onchange="updateMediaStatus(${item.id}, this.value)">
+                <select class="media-status-select" data-media-id="${item.id}">
                     <option value="not-started" ${item.status === 'not-started' ? 'selected' : ''}>Not Started / Amalitebeghị</option>
                     <option value="in-progress" ${item.status === 'in-progress' ? 'selected' : ''}>In Progress / Na-aga N'ihu</option>
                     <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>Completed / Emezuola</option>
                 </select>
             </div>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="openReflectionModal(${item.id}, '${item.title.replace(/'/g, "\\'")}')">
+            <button class="btn btn-primary media-reflection-btn" style="width: 100%; margin-top: 12px;" data-media-id="${item.id}" data-media-title="${item.title.replace(/"/g, '&quot;')}">
                 ${item.reflection ? '🎤 Update Reflection / Melite Ntụgharị Uche' : '🎤 Record What I Learned / Dekọọ Ihe M Mụtara'}
             </button>
             ${item.reflection ? `
@@ -1053,20 +1077,34 @@ function extractYouTubeId(url) {
 }
 
 function updateMediaStatus(id, newStatus) {
+    console.log('updateMediaStatus called:', id, newStatus);
+
     const media = JSON.parse(localStorage.getItem('media') || '[]');
     const item = media.find(m => String(m.id) === String(id));
 
-    if (item) {
-        const oldStatus = item.status;
-        item.status = newStatus;
-        localStorage.setItem('media', JSON.stringify(media));
+    if (!item) {
+        console.error('Media item not found:', id);
+        return;
+    }
 
-        // If changed to completed and no reflection, open modal
-        if (newStatus === 'completed' && !item.reflection && oldStatus !== 'completed') {
-            openReflectionModal(id, item.title);
-        } else {
-            loadMediaList();
-        }
+    const oldStatus = item.status;
+    item.status = newStatus;
+
+    try {
+        localStorage.setItem('media', JSON.stringify(media));
+        console.log('Status updated successfully');
+    } catch (e) {
+        console.error('Error saving status:', e);
+        alert('Error saving status. / Njehie ịchekwa ọnọdụ.');
+        return;
+    }
+
+    // If changed to completed and no reflection, open modal
+    if (newStatus === 'completed' && !item.reflection && oldStatus !== 'completed') {
+        console.log('Opening reflection modal for completed item');
+        openReflectionModal(id, item.title);
+    } else {
+        loadMediaList();
     }
 }
 
@@ -1096,16 +1134,34 @@ function deleteMedia(id) {
 window.deleteMedia = deleteMedia;
 
 function openReflectionModal(mediaId, mediaTitle) {
+    console.log('openReflectionModal called:', mediaId, mediaTitle);
+
     currentMediaId = mediaId;
-    document.getElementById('reflection-media-title').textContent = mediaTitle;
-    document.getElementById('reflection-media-title-igbo').textContent = mediaTitle;
-    document.getElementById('reflection-modal').classList.remove('hidden');
+    const titleElement = document.getElementById('reflection-media-title');
+    const titleIgboElement = document.getElementById('reflection-media-title-igbo');
+    const modalElement = document.getElementById('reflection-modal');
+
+    if (!titleElement || !titleIgboElement || !modalElement) {
+        console.error('Modal elements not found');
+        alert('Error opening modal. Please refresh the page. / Njehie imeghe modal. Biko nwegharịa ibe a.');
+        return;
+    }
+
+    titleElement.textContent = mediaTitle;
+    titleIgboElement.textContent = mediaTitle;
+    modalElement.classList.remove('hidden');
 
     // Reset modal recording state
-    document.getElementById('modal-record-btn').classList.remove('hidden');
-    document.getElementById('modal-recording-status').classList.add('hidden');
-    document.getElementById('modal-playback').classList.add('hidden');
+    const recordBtn = document.getElementById('modal-record-btn');
+    const recordingStatus = document.getElementById('modal-recording-status');
+    const playback = document.getElementById('modal-playback');
+
+    if (recordBtn) recordBtn.classList.remove('hidden');
+    if (recordingStatus) recordingStatus.classList.add('hidden');
+    if (playback) playback.classList.add('hidden');
     currentModalAudioBlob = null;
+
+    console.log('Modal opened successfully');
 }
 
 // Make function globally accessible
