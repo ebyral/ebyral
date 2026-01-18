@@ -1025,7 +1025,16 @@ async function loadPastRecordings() {
     // Sort by most recent first
     recordings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    list.innerHTML = recordings.map((recording, index) => `
+    // Add "Download All" button at the top
+    const downloadAllBtn = `
+        <div style="margin-bottom: 16px; text-align: center;">
+            <button class="btn btn-primary" onclick="downloadAllRecordings()" style="padding: 8px 16px;">
+                📥 Download All Recordings / Budata Ndekọ Niile
+            </button>
+        </div>
+    `;
+
+    const recordingsList = recordings.map((recording, index) => `
         <div class="recording-item">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                 <span class="recording-date">${new Date(recording.timestamp).toLocaleDateString('en-US', {
@@ -1034,14 +1043,21 @@ async function loadPastRecordings() {
                     month: 'long',
                     day: 'numeric'
                 })}</span>
-                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteRecording('${recording.timestamp}')">
-                    Delete / Hichapụ
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="downloadRecording('${recording.timestamp}')">
+                        📥 Download / Budata
+                    </button>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteRecording('${recording.timestamp}')">
+                        Delete / Hichapụ
+                    </button>
+                </div>
             </div>
             <div class="recording-prompt">${recording.prompt}</div>
             <audio controls src="${recording.audio}"></audio>
         </div>
     `).join('');
+
+    list.innerHTML = downloadAllBtn + recordingsList;
 }
 
 async function deleteRecording(timestamp) {
@@ -1065,6 +1081,90 @@ async function deleteRecording(timestamp) {
 
 // Make function globally accessible
 window.deleteRecording = deleteRecording;
+
+// Download individual recording
+async function downloadRecording(timestamp) {
+    try {
+        const recording = await dbGet('recordings', timestamp);
+
+        if (!recording) {
+            alert('Recording not found. / Ahụghị ndekọ.');
+            return;
+        }
+
+        // Create filename from date and prompt
+        const date = new Date(recording.timestamp);
+        const dateStr = date.toISOString().split('T')[0];
+        const promptShort = recording.prompt.substring(0, 30).replace(/[^a-z0-9]/gi, '_');
+        const filename = `igbo_recording_${dateStr}_${promptShort}.wav`;
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = recording.audio;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        console.error('Error downloading recording:', e);
+        alert('Error downloading recording. / Njehie ibudata ndekọ.');
+    }
+}
+
+// Make function globally accessible
+window.downloadRecording = downloadRecording;
+
+// Download all recordings as a zip file
+async function downloadAllRecordings() {
+    try {
+        const recordings = await dbGetAll('recordings');
+
+        if (recordings.length === 0) {
+            alert('No recordings to download. / Enweghị ndekọ ibudata.');
+            return;
+        }
+
+        // Create a JSON export with all recordings
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            appName: 'Igbo Practice App',
+            recordingsCount: recordings.length,
+            recordings: recordings.map(r => ({
+                date: r.date,
+                timestamp: r.timestamp,
+                prompt: r.prompt,
+                type: r.type,
+                audio: r.audio
+            }))
+        };
+
+        // Convert to JSON and create blob
+        const jsonStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        // Create filename with date
+        const dateStr = new Date().toISOString().split('T')[0];
+        const filename = `igbo_recordings_export_${dateStr}.json`;
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        alert(`Downloaded ${recordings.length} recordings as JSON.\n\nYou can re-import this file later to restore your recordings.\n\nBudata ndekọ ${recordings.length} dị ka JSON.`);
+    } catch (e) {
+        console.error('Error downloading all recordings:', e);
+        alert('Error downloading recordings. / Njehie ibudata ndekọ.');
+    }
+}
+
+// Make function globally accessible
+window.downloadAllRecordings = downloadAllRecordings;
 
 // Media Library
 async function initMediaLibrary() {
@@ -2014,7 +2114,16 @@ async function loadPastWritings() {
     // Sort by most recent first
     writings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    list.innerHTML = writings.map((writing) => `
+    // Add "Download All" button at the top
+    const downloadAllBtn = `
+        <div style="margin-bottom: 16px; text-align: center;">
+            <button class="btn btn-primary" onclick="downloadAllWritings()" style="padding: 8px 16px;">
+                📥 Download All Writings / Budata Ide Niile
+            </button>
+        </div>
+    `;
+
+    const writingsList = writings.map((writing) => `
         <div class="recording-item">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                 <div>
@@ -2028,9 +2137,14 @@ async function loadPastWritings() {
                         ${writing.wordCount} words / okwu
                     </div>
                 </div>
-                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteWriting('${writing.timestamp}')">
-                    Delete / Hichapụ
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="downloadWriting('${writing.timestamp}')">
+                        📥 Download / Budata
+                    </button>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteWriting('${writing.timestamp}')">
+                        Delete / Hichapụ
+                    </button>
+                </div>
             </div>
             <div class="recording-prompt" style="margin-bottom: 8px;">${writing.prompt}</div>
             <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; white-space: pre-wrap; font-size: 14px; color: #333; max-height: 300px; overflow-y: auto;">
@@ -2038,6 +2152,8 @@ async function loadPastWritings() {
             </div>
         </div>
     `).join('');
+
+    list.innerHTML = downloadAllBtn + writingsList;
 }
 
 async function deleteWriting(timestamp) {
@@ -2062,6 +2178,106 @@ async function deleteWriting(timestamp) {
 
 // Make function globally accessible
 window.deleteWriting = deleteWriting;
+
+// Download individual writing
+async function downloadWriting(timestamp) {
+    try {
+        const writing = await dbGet('writings', timestamp);
+
+        if (!writing) {
+            alert('Writing not found. / Ahụghị ide.');
+            return;
+        }
+
+        // Create filename from date and prompt
+        const date = new Date(writing.timestamp);
+        const dateStr = date.toISOString().split('T')[0];
+        const promptShort = writing.prompt.substring(0, 30).replace(/[^a-z0-9]/gi, '_');
+        const filename = `igbo_writing_${dateStr}_${promptShort}.txt`;
+
+        // Create text content with metadata
+        const content = `Igbo Practice App - Writing Entry
+Date: ${new Date(writing.timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+Prompt: ${writing.prompt}
+Word Count: ${writing.wordCount}
+
+---
+
+${writing.text}
+`;
+
+        // Create blob and download
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Error downloading writing:', e);
+        alert('Error downloading writing. / Njehie ibudata ide.');
+    }
+}
+
+// Make function globally accessible
+window.downloadWriting = downloadWriting;
+
+// Download all writings as JSON
+async function downloadAllWritings() {
+    try {
+        const writings = await dbGetAll('writings');
+
+        if (writings.length === 0) {
+            alert('No writings to download. / Enweghị ide ibudata.');
+            return;
+        }
+
+        // Create a JSON export with all writings
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            appName: 'Igbo Practice App',
+            writingsCount: writings.length,
+            totalWords: writings.reduce((sum, w) => sum + (w.wordCount || 0), 0),
+            writings: writings.map(w => ({
+                date: w.date,
+                timestamp: w.timestamp,
+                prompt: w.prompt,
+                text: w.text,
+                wordCount: w.wordCount,
+                type: w.type
+            }))
+        };
+
+        // Convert to JSON and create blob
+        const jsonStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        // Create filename with date
+        const dateStr = new Date().toISOString().split('T')[0];
+        const filename = `igbo_writings_export_${dateStr}.json`;
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        alert(`Downloaded ${writings.length} writings as JSON.\n\nYou can re-import this file later to restore your writings.\n\nBudata ide ${writings.length} dị ka JSON.`);
+    } catch (e) {
+        console.error('Error downloading all writings:', e);
+        alert('Error downloading writings. / Njehie ibudata ide.');
+    }
+}
+
+// Make function globally accessible
+window.downloadAllWritings = downloadAllWritings;
 
 // Storage Management
 function getStorageSize() {
