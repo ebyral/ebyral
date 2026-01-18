@@ -265,11 +265,35 @@ function initStarterMedia() {
 
     // Remove old starter media if version changed
     if (starterVersion !== CURRENT_VERSION) {
+        // Save user progress from old starter media
+        const userProgressMap = {};
+        media.forEach(item => {
+            if (item.isPreloaded && item.id) {
+                userProgressMap[item.id] = {
+                    status: item.status,
+                    reflection: item.reflection
+                };
+            }
+        });
+
         // Remove all old starter media
         const userMedia = media.filter(item => !item.isPreloaded);
 
-        // Add new starter media at the beginning
-        const updatedMedia = [...STARTER_MEDIA, ...userMedia];
+        // Add new starter media with preserved progress
+        const updatedStarterMedia = STARTER_MEDIA.map(item => {
+            const savedProgress = userProgressMap[item.id];
+            if (savedProgress) {
+                // Preserve user's progress
+                return {
+                    ...item,
+                    status: savedProgress.status,
+                    reflection: savedProgress.reflection
+                };
+            }
+            return item;
+        });
+
+        const updatedMedia = [...updatedStarterMedia, ...userMedia];
         localStorage.setItem('media', JSON.stringify(updatedMedia));
         localStorage.setItem('starterMediaVersion', CURRENT_VERSION);
     } else {
