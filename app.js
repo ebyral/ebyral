@@ -1344,9 +1344,14 @@ function loadWordsList() {
                 <div class="media-reflection" style="margin-top: 12px;">
                     <p><strong>Recent Practices / Omume Ndị Gara Aga:</strong></p>
                     ${word.practices.slice(0, 3).map(practice => `
-                        <div style="margin-bottom: 8px;">
-                            <div style="font-size: 12px; color: #6c757d; margin-bottom: 4px;">
-                                ${new Date(practice.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        <div style="margin-bottom: 12px; padding: 8px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <div style="font-size: 12px; color: #6c757d;">
+                                    ${new Date(practice.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </div>
+                                <button class="btn btn-danger" style="padding: 2px 8px; font-size: 11px;" onclick="deleteVocabPractice(${word.id}, '${practice.timestamp}')">
+                                    Delete / Hichapụ
+                                </button>
                             </div>
                             <audio controls src="${practice.audio}" style="width: 100%;"></audio>
                         </div>
@@ -1374,6 +1379,31 @@ function deleteWord(id) {
 
 // Make function globally accessible
 window.deleteWord = deleteWord;
+
+function deleteVocabPractice(wordId, timestamp) {
+    if (!confirm('Delete this practice recording? / Hichapụ ndekọ omume a?')) {
+        return;
+    }
+
+    const words = JSON.parse(localStorage.getItem('vocabulary-words') || '[]');
+    const word = words.find(w => w.id === wordId);
+
+    if (word) {
+        // Remove the specific practice
+        word.practices = word.practices.filter(p => p.timestamp !== timestamp);
+        localStorage.setItem('vocabulary-words', JSON.stringify(words));
+
+        // Refresh the display
+        loadWordsList();
+
+        // Update calendar in case this was the only practice for today
+        loadStats();
+        renderCalendar();
+    }
+}
+
+// Make function globally accessible
+window.deleteVocabPractice = deleteVocabPractice;
 
 function openVocabModal(wordId, igboWord, englishMeaning) {
     currentWordId = wordId;
