@@ -1304,7 +1304,17 @@ async function loadMediaList() {
             </button>
             ${item.reflection ? `
                 <div class="media-reflection">
-                    <p><strong>My Reflection / Ntụgharị Uche M:</strong></p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <p style="margin: 0;"><strong>My Reflection / Ntụgharị Uche M:</strong></p>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="downloadMediaReflection('${item.id}')">
+                                📥 Download / Budata
+                            </button>
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteMediaReflection('${item.id}')">
+                                Delete / Hichapụ
+                            </button>
+                        </div>
+                    </div>
                     <audio controls src="${item.reflection}"></audio>
                 </div>
             ` : ''}
@@ -1464,6 +1474,79 @@ async function deleteMedia(id) {
 
 // Make function globally accessible
 window.deleteMedia = deleteMedia;
+
+// Delete only the reflection audio (keep the media item)
+async function deleteMediaReflection(id) {
+    try {
+        if (!confirm('Delete this reflection? The media item will remain. / Hichapụ ntụgharị uche a? Ihe mgbasa ozi ga-anọgide.')) {
+            return;
+        }
+
+        const media = await dbGetAll('media');
+        const item = media.find(m => String(m.id) === String(id));
+
+        if (!item) {
+            alert('Media item not found. / Ahụghị ihe mgbasa ozi.');
+            return;
+        }
+
+        // Remove only the reflection audio
+        item.reflection = null;
+        await dbPut('media', item);
+
+        // Also remove from recordings if it was tracked
+        const recordings = await dbGetAll('recordings');
+        const updatedRecordings = recordings.filter(r =>
+            !(r.type === 'media' && String(r.mediaId) === String(id))
+        );
+
+        if (updatedRecordings.length !== recordings.length) {
+            await dbPutAll('recordings', updatedRecordings);
+        }
+
+        // Refresh displays
+        await loadMediaList();
+        await loadStats();
+        await renderCalendar();
+    } catch (e) {
+        console.error('Error deleting reflection:', e);
+        alert('Error deleting reflection. / Njehie ihichapụ ntụgharị uche.');
+    }
+}
+
+// Make function globally accessible
+window.deleteMediaReflection = deleteMediaReflection;
+
+// Download media reflection
+async function downloadMediaReflection(id) {
+    try {
+        const media = await dbGetAll('media');
+        const item = media.find(m => String(m.id) === String(id));
+
+        if (!item || !item.reflection) {
+            alert('Reflection not found. / Ahụghị ntụgharị uche.');
+            return;
+        }
+
+        // Create filename from title
+        const titleShort = item.title.substring(0, 40).replace(/[^a-z0-9]/gi, '_');
+        const filename = `igbo_media_reflection_${titleShort}.wav`;
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = item.reflection;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        console.error('Error downloading reflection:', e);
+        alert('Error downloading reflection. / Njehie ibudata ntụgharị uche.');
+    }
+}
+
+// Make function globally accessible
+window.downloadMediaReflection = downloadMediaReflection;
 
 function openReflectionModal(mediaId, mediaTitle) {
     console.log('openReflectionModal called:', mediaId, mediaTitle);
@@ -1732,9 +1815,14 @@ async function loadWordsList() {
                                 <div style="font-size: 12px; color: #6c757d;">
                                     ${new Date(practice.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </div>
-                                <button class="btn btn-danger" style="padding: 2px 8px; font-size: 11px;" onclick="deleteVocabPractice(${word.id}, '${practice.timestamp}')">
-                                    Delete / Hichapụ
-                                </button>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn btn-primary" style="padding: 2px 8px; font-size: 11px;" onclick="downloadVocabPractice(${word.id}, '${practice.timestamp}')">
+                                        📥 Download
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 2px 8px; font-size: 11px;" onclick="deleteVocabPractice(${word.id}, '${practice.timestamp}')">
+                                        Delete / Hichapụ
+                                    </button>
+                                </div>
                             </div>
                             <audio controls src="${practice.audio}" style="width: 100%;"></audio>
                         </div>
@@ -1794,6 +1882,45 @@ async function deleteVocabPractice(wordId, timestamp) {
 
 // Make function globally accessible
 window.deleteVocabPractice = deleteVocabPractice;
+
+// Download vocabulary practice recording
+async function downloadVocabPractice(wordId, timestamp) {
+    try {
+        const word = await dbGet('vocabulary', wordId);
+
+        if (!word) {
+            alert('Word not found. / Ahụghị okwu.');
+            return;
+        }
+
+        const practice = word.practices.find(p => p.timestamp === timestamp);
+
+        if (!practice) {
+            alert('Practice recording not found. / Ahụghị ndekọ omume.');
+            return;
+        }
+
+        // Create filename from word and date
+        const date = new Date(practice.timestamp);
+        const dateStr = date.toISOString().split('T')[0];
+        const wordShort = word.igboWord.substring(0, 20).replace(/[^a-z0-9]/gi, '_');
+        const filename = `igbo_vocab_practice_${wordShort}_${dateStr}.wav`;
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = practice.audio;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        console.error('Error downloading practice:', e);
+        alert('Error downloading practice. / Njehie ibudata omume.');
+    }
+}
+
+// Make function globally accessible
+window.downloadVocabPractice = downloadVocabPractice;
 
 function openVocabModal(wordId, igboWord, englishMeaning) {
     currentWordId = wordId;
