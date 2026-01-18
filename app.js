@@ -392,19 +392,38 @@ function initRecording() {
     if (stopBtn) stopBtn.addEventListener('click', stopRecording);
     if (rerecordBtn) rerecordBtn.addEventListener('click', reRecord);
     if (saveBtn) saveBtn.addEventListener('click', saveRecording);
-    if (recordMoreBtn) recordMoreBtn.addEventListener('click', recordMore);
+    if (recordMoreBtn) {
+        recordMoreBtn.addEventListener('click', recordMore);
+        console.log('Record More button initialized');
+    } else {
+        console.warn('Record More button not found!');
+    }
 }
 
 function recordMore() {
-    // Reset all states to allow new recording
-    document.getElementById('completion-message').classList.add('hidden');
-    document.getElementById('playback-section').classList.add('hidden');
-    document.getElementById('recording-controls').classList.remove('hidden');
-    document.getElementById('record-btn').classList.remove('hidden');
-    document.getElementById('recording-status').classList.add('hidden');
+    try {
+        // Reset all states to allow new recording
+        const completionMsg = document.getElementById('completion-message');
+        const playbackSection = document.getElementById('playback-section');
+        const recordingControls = document.getElementById('recording-controls');
+        const recordBtn = document.getElementById('record-btn');
+        const recordingStatus = document.getElementById('recording-status');
 
-    // Clear current audio blob
-    currentAudioBlob = null;
+        if (completionMsg) completionMsg.classList.add('hidden');
+        if (playbackSection) playbackSection.classList.add('hidden');
+        if (recordingControls) recordingControls.classList.remove('hidden');
+        if (recordBtn) recordBtn.classList.remove('hidden');
+        if (recordingStatus) recordingStatus.classList.add('hidden');
+
+        // Clear current audio blob and chunks
+        currentAudioBlob = null;
+        audioChunks = [];
+
+        console.log('Record More: UI reset complete');
+    } catch (e) {
+        console.error('Error in recordMore:', e);
+        alert('Error resetting recording. Please refresh the page. / Njehie. Biko nwegharịa ibe a.');
+    }
 }
 
 async function startRecording() {
