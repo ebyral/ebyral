@@ -485,6 +485,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         await checkStorageUsage();
 
         console.log('App initialized with IndexedDB');
+
+        // DEBUG: Cleanup function for broken media items
+        window.cleanupBrokenMedia = async function() {
+            try {
+                const media = await dbGetAll('media');
+                console.log('All media items:', media);
+
+                // Find items with files but broken display
+                const brokenItems = media.filter(item =>
+                    !item.isPreloaded &&
+                    item.file &&
+                    !item.file.startsWith('data:application/pdf')
+                );
+
+                if (brokenItems.length === 0) {
+                    console.log('No broken items found');
+                    alert('No broken items found. / Ahụghị ihe mebiri emebi.');
+                    return;
+                }
+
+                console.log('Broken items found:', brokenItems);
+
+                if (confirm(`Found ${brokenItems.length} broken items:\n${brokenItems.map(i => i.title).join('\n')}\n\nDelete them all?`)) {
+                    for (const item of brokenItems) {
+                        await dbDelete('media', item.id);
+                        console.log('Deleted:', item.title);
+                    }
+                    await loadMediaList();
+                    alert(`Deleted ${brokenItems.length} items.`);
+                }
+            } catch (e) {
+                console.error('Error cleaning up:', e);
+                alert('Error: ' + e.message);
+            }
+        };
+
+        // DEBUG: Delete by title search
+        window.deleteMediaByTitle = async function(search) {
+            try {
+                const media = await dbGetAll('media');
+                const items = media.filter(item =>
+                    !item.isPreloaded &&
+                    item.title.toLowerCase().includes(search.toLowerCase())
+                );
+
+                if (items.length === 0) {
+                    alert(`No items found with "${search}"`);
+                    return;
+                }
+
+                if (confirm(`Delete ${items.length} item(s):\n${items.map(i => i.title).join('\n')}?`)) {
+                    for (const item of items) {
+                        await dbDelete('media', item.id);
+                    }
+                    await loadMediaList();
+                    alert(`Deleted ${items.length} item(s).`);
+                }
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        };
+
     } catch (error) {
         console.error('Error initializing app:', error);
         alert('Error loading app. Please refresh the page. / Njehie na-ebugo ngwa. Biko nwegharịa ibe a.');
