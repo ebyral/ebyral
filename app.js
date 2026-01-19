@@ -1242,18 +1242,37 @@ async function addMedia() {
         file: null
     };
 
-    // Handle PDF file upload
+    // Handle file upload
     if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
+
+        // Check file size (limit to 10MB for performance)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File is too large. Please upload files under 10MB. / Faịlụ buru ibu. Biko bulite faịlụ n\'okpuru 10MB.');
+            return;
+        }
+
         const reader = new FileReader();
 
         reader.onloadend = async () => {
             newMedia.file = reader.result;
-            await dbPut('media', newMedia);
+            newMedia.fileType = file.type; // Store the actual file type
+            newMedia.fileName = file.name; // Store the file name
 
-            document.getElementById('add-media-form').classList.add('hidden');
-            document.getElementById('media-form').reset();
-            await loadMediaList();
+            try {
+                await dbPut('media', newMedia);
+
+                document.getElementById('add-media-form').classList.add('hidden');
+                document.getElementById('media-form').reset();
+                await loadMediaList();
+            } catch (e) {
+                console.error('Error saving media:', e);
+                alert('Error uploading file. File may be too large. / Njehie ibugo faịlụ. Faịlụ nwere ike buru ibu.');
+            }
+        };
+
+        reader.onerror = () => {
+            alert('Error reading file. / Njehie ịgụ faịlụ.');
         };
 
         reader.readAsDataURL(file);
@@ -1324,11 +1343,26 @@ async function loadMediaList() {
 }
 
 function getMediaEmbed(item) {
-    // If there's an uploaded PDF file
-    if (item.file && item.file.startsWith('data:application/pdf')) {
+    // If there's an uploaded file
+    if (item.file) {
+        // Check if it's a PDF (by MIME type or data URL prefix)
+        if (item.file.startsWith('data:application/pdf') ||
+            (item.fileType && item.fileType === 'application/pdf') ||
+            (item.fileName && item.fileName.toLowerCase().endsWith('.pdf'))) {
+            return `
+                <div class="media-embed pdf-embed">
+                    <iframe src="${item.file}#toolbar=0" title="${item.title}"></iframe>
+                </div>
+            `;
+        }
+
+        // If it's some other file type, show a download link
         return `
-            <div class="media-embed pdf-embed">
-                <iframe src="${item.file}#toolbar=0" title="${item.title}"></iframe>
+            <div class="media-link" style="padding: 20px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                <p style="margin-bottom: 12px;">📄 File uploaded: ${item.fileName || 'Unknown file'}</p>
+                <a href="${item.file}" download="${item.fileName || 'download'}" class="btn btn-primary">
+                    Download File / Budata Faịlụ
+                </a>
             </div>
         `;
     }
@@ -1455,7 +1489,12 @@ async function deleteMedia(id) {
         const media = await dbGetAll('media');
         const item = media.find(m => String(m.id) === String(id));
 
-        if (item && item.isPreloaded) {
+        if (!item) {
+            alert('Media item not found. / Ahụghị ihe mgbasa ozi.');
+            return;
+        }
+
+        if (item.isPreloaded) {
             alert('Starter library items cannot be deleted. / Enweghị ike ihichapụ ihe ndị dị na ọba akwụkwọ mmalite.');
             return;
         }
@@ -1464,7 +1503,8 @@ async function deleteMedia(id) {
             return;
         }
 
-        await dbDelete('media', id);
+        // Use the actual item.id to ensure type matches
+        await dbDelete('media', item.id);
         await loadMediaList();
     } catch (e) {
         console.error('Error deleting media:', e);
