@@ -1321,6 +1321,15 @@ async function addMedia() {
             newMedia.file = reader.result;
             newMedia.fileType = file.type; // Store the actual file type
             newMedia.fileName = file.name; // Store the file name
+            newMedia.fileSize = file.size; // Store size for debugging
+
+            // DEBUG: Log what we're storing
+            console.log('Uploading file:', {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                dataUrlPrefix: reader.result.substring(0, 50)
+            });
 
             try {
                 await dbPut('media', newMedia);
@@ -1328,6 +1337,8 @@ async function addMedia() {
                 document.getElementById('add-media-form').classList.add('hidden');
                 document.getElementById('media-form').reset();
                 await loadMediaList();
+
+                console.log('File uploaded successfully');
             } catch (e) {
                 console.error('Error saving media:', e);
                 alert('Error uploading file. File may be too large. / Njehie ibugo faịlụ. Faịlụ nwere ike buru ibu.');
@@ -1357,7 +1368,25 @@ async function loadMediaList() {
         return;
     }
 
-    list.innerHTML = media.map(item => {
+    // Check for broken items (uploaded files with no fileName - old broken uploads)
+    const brokenItems = media.filter(item =>
+        !item.isPreloaded &&
+        item.file &&
+        !item.fileName
+    );
+
+    // Add "Fix Broken Items" button if there are any
+    const fixButton = brokenItems.length > 0 ? `
+        <div style="margin-bottom: 16px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;">
+            <p style="margin-bottom: 8px; color: #856404;"><strong>⚠️ ${brokenItems.length} broken item(s) found</strong></p>
+            <p style="margin-bottom: 12px; font-size: 14px; color: #856404;">These items cannot display properly. Click below to delete them.</p>
+            <button class="btn btn-danger" onclick="fixBrokenMediaItems()" style="padding: 8px 16px;">
+                🗑️ Delete ${brokenItems.length} Broken Item(s) / Hichapụ Ihe ${brokenItems.length} Mebiri Emebi
+            </button>
+        </div>
+    ` : '';
+
+    const mediaItems = media.map(item => {
         const embedContent = getMediaEmbed(item);
 
         return `
@@ -1403,26 +1432,79 @@ async function loadMediaList() {
         </div>
         `;
     }).join('');
+
+    list.innerHTML = fixButton + mediaItems;
 }
+
+// Fix broken media items button handler
+async function fixBrokenMediaItems() {
+    try {
+        const media = await dbGetAll('media');
+        const brokenItems = media.filter(item =>
+            !item.isPreloaded &&
+            item.file &&
+            !item.fileName
+        );
+
+        if (brokenItems.length === 0) {
+            alert('No broken items found. / Ahụghị ihe mebiri emebi.');
+            return;
+        }
+
+        const titles = brokenItems.map(i => i.title).join('\n');
+        if (!confirm(`Delete these ${brokenItems.length} broken items?\n\n${titles}\n\nHichapụ ihe ${brokenItems.length} mebiri emebi ndị a?`)) {
+            return;
+        }
+
+        for (const item of brokenItems) {
+            await dbDelete('media', item.id);
+            console.log('Deleted broken item:', item.title);
+        }
+
+        await loadMediaList();
+        alert(`Deleted ${brokenItems.length} broken item(s). / Ehichapụla ihe ${brokenItems.length} mebiri emebi.`);
+    } catch (e) {
+        console.error('Error fixing broken items:', e);
+        alert('Error: ' + e.message);
+    }
+}
+
+// Make function globally accessible
+window.fixBrokenMediaItems = fixBrokenMediaItems;
 
 function getMediaEmbed(item) {
     // If there's an uploaded file
     if (item.file) {
-        // Check if it's a PDF (by MIME type or data URL prefix)
-        if (item.file.startsWith('data:application/pdf') ||
-            (item.fileType && item.fileType === 'application/pdf') ||
-            (item.fileName && item.fileName.toLowerCase().endsWith('.pdf'))) {
+        // DEBUG: Log what we're trying to display
+        console.log('Displaying media item:', {
+            title: item.title,
+            hasFile: !!item.file,
+            fileName: item.fileName,
+            fileType: item.fileType,
+            dataUrlStart: item.file.substring(0, 30)
+        });
+
+        // Check if it's a PDF - prioritize filename extension as most reliable
+        const isPDF = (item.fileName && item.fileName.toLowerCase().endsWith('.pdf')) ||
+                     item.file.startsWith('data:application/pdf') ||
+                     (item.fileType && item.fileType.includes('pdf'));
+
+        if (isPDF) {
+            console.log('Detected as PDF, displaying iframe');
             return `
                 <div class="media-embed pdf-embed">
                     <iframe src="${item.file}#toolbar=0" title="${item.title}"></iframe>
+                    <p style="font-size: 12px; color: #6c757d; margin-top: 8px;">📄 ${item.fileName || 'PDF Document'} (${item.fileSize ? (item.fileSize / 1024).toFixed(0) + 'KB' : 'size unknown'})</p>
                 </div>
             `;
         }
 
         // If it's some other file type, show a download link
+        console.log('Not detected as PDF, showing download link');
         return `
             <div class="media-link" style="padding: 20px; text-align: center; background: #f8f9fa; border-radius: 8px;">
                 <p style="margin-bottom: 12px;">📄 File uploaded: ${item.fileName || 'Unknown file'}</p>
+                <p style="font-size: 12px; color: #6c757d; margin-bottom: 12px;">Type: ${item.fileType || 'unknown'} | Size: ${item.fileSize ? (item.fileSize / 1024).toFixed(0) + 'KB' : 'unknown'}</p>
                 <a href="${item.file}" download="${item.fileName || 'download'}" class="btn btn-primary">
                     Download File / Budata Faịlụ
                 </a>
