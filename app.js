@@ -1,7 +1,10 @@
 // IndexedDB Setup - Provides 50-500MB storage instead of 5-10MB
+// CODE VERSION: 2026-01-21-v2 (PDF Fix)
 const DB_NAME = 'IgboPracticeDB';
 const DB_VERSION = 1;
 let db = null;
+
+console.log('✅ App.js loaded - Version 2026-01-21-v2 (PDF Fix)');
 
 // Initialize IndexedDB
 function initDB() {
@@ -1288,11 +1291,15 @@ async function initMediaLibrary() {
 }
 
 async function addMedia() {
+    console.log('🔵 addMedia() called');
+
     const title = document.getElementById('media-title').value;
     const type = document.getElementById('media-type').value;
     const link = document.getElementById('media-link').value;
     const notes = document.getElementById('media-notes').value;
     const fileInput = document.getElementById('media-file');
+
+    console.log('📋 Form data:', { title, type, link, notes, hasFile: !!(fileInput.files && fileInput.files[0]) });
 
     const newMedia = {
         id: Date.now(),
@@ -1308,6 +1315,7 @@ async function addMedia() {
     // Handle file upload
     if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
+        console.log('📁 File selected:', file.name, file.type, file.size + ' bytes');
 
         // Check file size (limit to 10MB for performance)
         if (file.size > 10 * 1024 * 1024) {
